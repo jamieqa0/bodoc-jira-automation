@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA 종료보고서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #f8f9fb;
+    --border: #e2e6ea;
+    --accent: #1a5cff;
+    --accent-light: #e8efff;
+    --pass: #0d9e6e;
+    --pass-bg: #e6f7f1;
+    --fail: #d63b3b;
+    --fail-bg: #fdeaea;
+    --warn: #d97706;
+    --warn-bg: #fef3e2;
+    --text: #1a1d23;
+    --text2: #5a6070;
+    --text3: #9099a8;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Noto Sans KR', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 32px 24px 64px;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .report-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* ─── Header ─── */
+  .report-header {
+    background: var(--text);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+    padding: 28px 32px 24px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .report-header .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+  .report-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+  .report-header .subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,.55);
+    margin-top: 4px;
+  }
+  .verdict-box {
+    text-align: center;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 8px;
+    padding: 12px 20px;
+    min-width: 130px;
+    flex-shrink: 0;
+  }
+  .verdict-box .verdict-label {
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.5);
+    margin-bottom: 6px;
+  }
+  .verdict-box .verdict-value {
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 5px 14px;
+    display: inline-block;
+  }
+  .verdict-value.deploy { background: #0d9e6e; color: #fff; }
+  .verdict-value.hold   { background: #d63b3b; color: #fff; }
+  .verdict-value.cond   { background: #d97706; color: #fff; }
+
+  /* ─── Meta info bar ─── */
+  .meta-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 16px 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .meta-item label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 3px;
+  }
+  .meta-item .val {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 1.5px solid var(--border);
+    padding-bottom: 2px;
+    min-width: 100%;
+    display: block;
+    outline: none;
+  }
+  .meta-item .val:focus { border-color: var(--accent); }
+  [contenteditable="true"]:empty:before {
+    content: attr(data-ph);
+    color: var(--text3);
+    font-weight: 400;
+  }
+
+  /* ─── Section ─── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 24px 32px;
+  }
+  .section:last-child { border-radius: 0 0 12px 12px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .num {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 3px;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ─── Platform Cards ─── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .platform-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .platform-card .card-head {
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-head .icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .platform-card.app .card-head { background: #eef2ff; }
+  .platform-card.app .icon { background: #c7d2fe; }
+  .platform-card.web .card-head { background: #e0f2fe; }
+  .platform-card.web .icon { background: #bae6fd; }
+  .platform-card.admin .card-head { background: #fef9e7; }
+  .platform-card.admin .icon { background: #fde68a; }
+  .platform-card .card-body { padding: 12px 14px; }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px dashed #eaedf0;
+    font-size: 12px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .slabel { color: var(--text2); }
+  .stat-row .sval {
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--text);
+    border: none;
+    background: transparent;
+    text-align: right;
+    width: 80px;
+    outline: none;
+    font-size: 12px;
+  }
+  .sval:focus { background: var(--accent-light); border-radius: 3px; }
+  .sval.green { color: var(--pass); }
+  .sval.red   { color: var(--fail); }
+  .sval.amber { color: var(--warn); }
+
+  /* ─── Summary KPI bar ─── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .kpi-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .kpi-card .kval {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.2;
+    display: block;
+    outline: none;
+  }
+  .kpi-card .kval:focus { background: var(--accent-light); border-radius: 4px; }
+  .kpi-card .klabel { font-size: 10px; color: var(--text3); margin-top: 4px; letter-spacing: .06em; }
+  .kpi-card.total .kval { color: var(--accent); }
+  .kpi-card.pass .kval  { color: var(--pass); }
+  .kpi-card.fail .kval  { color: var(--fail); }
+  .kpi-card.block .kval { color: #7c3aed; }
+  .kpi-card.rate .kval  { color: var(--warn); }
+
+  /* ─── Defect Table ─── */
+  table.defect-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  table.defect-table thead tr {
+    background: var(--surface2);
+  }
+  table.defect-table th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+  }
+  table.defect-table td {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.defect-table tbody tr:nth-child(even) td { background: #fafbfc; }
+  table.defect-table td[contenteditable="true"]:focus { background: var(--accent-light); outline: none; }
+
+  .severity {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .05em;
+  }
+  .sev-critical { background: #fdeaea; color: var(--fail); border: 1px solid #f5b8b8; }
+  .sev-high     { background: #fff3e0; color: #c05621; border: 1px solid #fbd38d; }
+  .sev-medium   { background: #fefce8; color: #92400e; border: 1px solid #fde68a; }
+  .sev-low      { background: #e6f7f1; color: var(--pass); border: 1px solid #a3e0cc; }
+
+  .status-badge {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .st-open   { background: #fdeaea; color: var(--fail); }
+  .st-fixed  { background: var(--pass-bg); color: var(--pass); }
+  .st-defer  { background: #f3e8ff; color: #7c3aed; }
+  .st-wontfix{ background: #f3f4f6; color: #6b7280; }
+
+  /* ─── Textarea fields ─── */
+  .text-field {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    padding: 10px 12px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text);
+    resize: vertical;
+    outline: none;
+    line-height: 1.7;
+    min-height: 72px;
+  }
+  .text-field:focus { border-color: var(--accent); background: #fff; }
+
+  /* ─── Risk / Decision ─── */
+  .decision-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .decision-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .decision-card .dc-head {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+  }
+  .decision-card .dc-body { padding: 12px 14px; }
+
+  .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    transition: all .15s;
+    color: var(--text2);
+    user-select: none;
+  }
+  .radio-group input[type=radio] { display: none; }
+  .radio-group input:checked + span { font-weight: 700; }
+  .radio-group label:has(input:checked) { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+  .radio-group label.red:has(input:checked)   { border-color: var(--fail); background: var(--fail-bg); color: var(--fail); }
+  .radio-group label.amber:has(input:checked) { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
+  .radio-group label.green:has(input:checked) { border-color: var(--pass); background: var(--pass-bg); color: var(--pass); }
+
+  /* ─── Signature ─── */
+  .sign-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .sign-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .sign-box .sign-role {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  .sign-box .sign-name {
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1.5px solid var(--border);
+    padding-bottom: 3px;
+    outline: none;
+    min-height: 20px;
+  }
+  .sign-box .sign-name:focus { border-color: var(--accent); }
+  .sign-box .sign-date {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 6px;
+    font-family: var(--mono);
+    outline: none;
+  }
+  .sign-box .sign-date:focus { background: var(--accent-light); border-radius: 3px; }
+
+  /* ─── Print ─── */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .report-wrap { max-width: 100%; }
+    .no-print { display: none !important; }
+    .section, .meta-bar { border: 1px solid #ccc; }
+  }
+
+  /* ─── Toolbar ─── */
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .btn {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    transition: .15s;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.primary:hover { background: #1349d4; }
+</style>
+</head>
+<body>
+<div class="report-wrap">
+
+  <!-- Toolbar -->
+  <div class="toolbar no-print">
+    <button class="btn" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
+    <button class="btn primary" onclick="alert('보고서 내용을 저장하세요.')">💾 저장</button>
+  </div>
+
+  <!-- Header -->
+  <div class="report-header">
+    <div>
+      <span class="badge">QA Completion Report</span>
+      <h1>QA 종료보고서</h1>
+      <div class="subtitle">Quality Assurance Final Report — Release Readiness Assessment</div>
+    </div>
+    <div class="verdict-box">
+      <div class="verdict-label">배포 판정</div>
+      <div id="verdict-display" class="verdict-value deploy">배포 가능</div>
+    </div>
+  </div>
+
+  <!-- Meta bar -->
+  <div class="meta-bar">
+    <div class="meta-item">
+      <label>서비스명</label>
+      <span class="val" contenteditable="true" data-ph="서비스 이름"></span>
+    </div>
+    <div class="meta-item">
+      <label>버전 / 릴리즈</label>
+      <span class="val" contenteditable="true" data-ph="v1.0.0"></span>
+    </div>
+    <div class="meta-item">
+      <label>QA 기간</label>
+      <span class="val" contenteditable="true" data-ph="2025.01.01 ~ 2025.01.10"></span>
+    </div>
+    <div class="meta-item">
+      <label>보고서 작성일</label>
+      <span class="val" contenteditable="true" data-ph="2025.01.10"></span>
+    </div>
+    <div class="meta-item">
+      <label>QA 담당자</label>
+      <span class="val" contenteditable="true" data-ph="홍길동"></span>
+    </div>
+    <div class="meta-item">
+      <label>QA 환경</label>
+      <span class="val" contenteditable="true" data-ph="Staging / QA Server"></span>
+    </div>
+    <div class="meta-item">
+      <label>테스트 유형</label>
+      <span class="val" contenteditable="true" data-ph="기능 / 회귀 / 통합"></span>
+    </div>
+    <div class="meta-item">
+      <label>빌드 번호</label>
+      <span class="val" contenteditable="true" data-ph="#1234"></span>
+    </div>
+  </div>
+
+  <!-- 1. 테스트 범위 -->
+  <div class="section">
+    <div class="section-title"><span class="num">1</span> 테스트 범위 및 목표</div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">테스트 범위 및 주요 목표</label>
+      <textarea class="text-field" placeholder="이번 QA에서 검증한 기능 범위, 변경사항, 주요 목표를 기술하세요."></textarea>
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">테스트 제외 항목 (Out of Scope)</label>
+      <textarea class="text-field" placeholder="이번 QA에서 검증하지 않은 항목 및 이유를 기술하세요." style="min-height:52px;"></textarea>
+    </div>
+  </div>
+
+  <!-- 2. 플랫폼별 테스트 결과 -->
+  <div class="section">
+    <div class="section-title"><span class="num">2</span> 플랫폼별 테스트 결과</div>
+    <div class="platform-grid">
+
+      <!-- App -->
+      <div class="platform-card app">
+        <div class="card-head">
+          <span class="icon">📱</span> 앱 (Mobile App)
+        </div>
+        <div class="card-body">
+          <div class="stat-row"><span class="slabel">OS / 버전</span><input class="sval" value="iOS / Android" /></div>
+          <div class="stat-row"><span class="slabel">총 TC 수</span><input class="sval" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">통과 (Pass)</span><input class="sval green" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">실패 (Fail)</span><input class="sval red" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">블록 (Blocked)</span><input class="sval amber" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">미실행 (N/T)</span><input class="sval" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">통과율</span><input class="sval" value="0%" /></div>
+        </div>
+      </div>
+
+      <!-- Web (Backoffice) -->
+      <div class="platform-card web">
+        <div class="card-head">
+          <span class="icon">🖥</span> 백오피스 웹
+        </div>
+        <div class="card-body">
+          <div class="stat-row"><span class="slabel">브라우저</span><input class="sval" value="Chrome / Edge" /></div>
+          <div class="stat-row"><span class="slabel">총 TC 수</span><input class="sval" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">통과 (Pass)</span><input class="sval green" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">실패 (Fail)</span><input class="sval red" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">블록 (Blocked)</span><input class="sval amber" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">미실행 (N/T)</span><input class="sval" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">통과율</span><input class="sval" value="0%" /></div>
+        </div>
+      </div>
+
+      <!-- Admin -->
+      <div class="platform-card admin">
+        <div class="card-head">
+          <span class="icon">⚙️</span> 어드민 (Admin)
+        </div>
+        <div class="card-body">
+          <div class="stat-row"><span class="slabel">브라우저</span><input class="sval" value="Chrome / Edge" /></div>
+          <div class="stat-row"><span class="slabel">총 TC 수</span><input class="sval" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">통과 (Pass)</span><input class="sval green" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">실패 (Fail)</span><input class="sval red" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">블록 (Blocked)</span><input class="sval amber" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">미실행 (N/T)</span><input class="sval" type="number" value="0" /></div>
+          <div class="stat-row"><span class="slabel">통과율</span><input class="sval" value="0%" /></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 전체 테스트 통계 -->
+  <div class="section">
+    <div class="section-title"><span class="num">3</span> 전체 테스트 통계 (All Platforms)</div>
+    <div class="kpi-row">
+      <div class="kpi-card total">
+        <span class="kval" contenteditable="true">0</span>
+        <div class="klabel">총 TC</div>
+      </div>
+      <div class="kpi-card pass">
+        <span class="kval" contenteditable="true">0</span>
+        <div class="klabel">Pass</div>
+      </div>
+      <div class="kpi-card fail">
+        <span class="kval" contenteditable="true">0</span>
+        <div class="klabel">Fail</div>
+      </div>
+      <div class="kpi-card block">
+        <span class="kval" contenteditable="true">0</span>
+        <div class="klabel">Blocked</div>
+      </div>
+      <div class="kpi-card rate">
+        <span class="kval" contenteditable="true">0%</span>
+        <div class="klabel">통과율</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 결함 현황 -->
+  <div class="section">
+    <div class="section-title"><span class="num">4</span> 결함 현황 (Defect Summary)</div>
+
+    <!-- 결함 집계 -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
+      <div style="background:var(--fail-bg);border:1px solid #f5b8b8;border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--fail)" contenteditable="true">0</div>
+        <div style="font-size:10px;color:var(--fail);margin-top:3px;">Critical</div>
+      </div>
+      <div style="background:#fff3e0;border:1px solid #fbd38d;border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:#c05621" contenteditable="true">0</div>
+        <div style="font-size:10px;color:#c05621;margin-top:3px;">High</div>
+      </div>
+      <div style="background:var(--warn-bg);border:1px solid #fde68a;border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--warn)" contenteditable="true">0</div>
+        <div style="font-size:10px;color:var(--warn);margin-top:3px;">Medium</div>
+      </div>
+      <div style="background:var(--pass-bg);border:1px solid #a3e0cc;border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--pass)" contenteditable="true">0</div>
+        <div style="font-size:10px;color:var(--pass);margin-top:3px;">Low</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent)" contenteditable="true">0</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;">합계 (Total)</div>
+      </div>
+    </div>
+
+    <!-- 결함 상세 테이블 -->
+    <div style="overflow-x:auto;">
+      <table class="defect-table">
+        <thead>
+          <tr>
+            <th style="width:50px">No</th>
+            <th style="width:80px">플랫폼</th>
+            <th>결함 제목</th>
+            <th style="width:80px">심각도</th>
+            <th style="width:70px">상태</th>
+            <th style="width:110px">담당 개발자</th>
+            <th style="width:90px">수정 예정일</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody id="defect-body">
+          <tr>
+            <td contenteditable="true">1</td>
+            <td contenteditable="true">앱</td>
+            <td contenteditable="true">결함 내용을 입력하세요</td>
+            <td><span class="severity sev-critical">Critical</span></td>
+            <td><span class="status-badge st-open">Open</span></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+          </tr>
+          <tr>
+            <td contenteditable="true">2</td>
+            <td contenteditable="true">백오피스</td>
+            <td contenteditable="true"></td>
+            <td><span class="severity sev-high">High</span></td>
+            <td><span class="status-badge st-fixed">Fixed</span></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+          </tr>
+          <tr>
+            <td contenteditable="true">3</td>
+            <td contenteditable="true">어드민</td>
+            <td contenteditable="true"></td>
+            <td><span class="severity sev-medium">Medium</span></td>
+            <td><span class="status-badge st-defer">Defer</span></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="btn no-print" style="margin-top:8px;font-size:11px;" onclick="addDefectRow()">+ 행 추가</button>
+  </div>
+
+  <!-- 5. 리스크 및 미결 사항 -->
+  <div class="section">
+    <div class="section-title"><span class="num">5</span> 리스크 및 미결 사항</div>
+    <div class="decision-grid">
+      <div class="decision-card">
+        <div class="dc-head">잔존 리스크 (Residual Risk)</div>
+        <div class="dc-body">
+          <textarea class="text-field" placeholder="배포 후에도 잔존하는 리스크를 기술하세요.&#10;예: Open 결함의 영향 범위, 미테스트 영역 등"></textarea>
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="dc-head">조건부 배포 조건 / 후속 조치</div>
+        <div class="dc-body">
+          <textarea class="text-field" placeholder="배포 전 완료해야 할 조건 또는 배포 후 후속 조치를 기술하세요."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. 배포 판정 -->
+  <div class="section">
+    <div class="section-title"><span class="num">6</span> 배포 판정 (Release Decision)</div>
+    <div class="decision-grid" style="margin-bottom:14px;">
+      <div class="decision-card">
+        <div class="dc-head">판정</div>
+        <div class="dc-body">
+          <div class="radio-group">
+            <label class="green"><input type="radio" name="verdict" value="deploy" onchange="updateVerdict(this)" checked><span>✅ 배포 가능</span></label>
+            <label class="amber"><input type="radio" name="verdict" value="cond" onchange="updateVerdict(this)"><span>⚠️ 조건부 배포</span></label>
+            <label class="red"><input type="radio" name="verdict" value="hold" onchange="updateVerdict(this)"><span>🚫 배포 보류</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="dc-head">전반적 품질 수준</div>
+        <div class="dc-body">
+          <div class="radio-group">
+            <label class="green"><input type="radio" name="quality" value="high"><span>높음</span></label>
+            <label class="amber"><input type="radio" name="quality" value="mid" checked><span>보통</span></label>
+            <label class="red"><input type="radio" name="quality" value="low"><span>낮음</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">판정 근거 및 의견</label>
+    <textarea class="text-field" placeholder="배포 판정 근거, QA 총평, 개선 권고사항 등을 기술하세요."></textarea>
+  </div>
+
+  <!-- 7. 서명 -->
+  <div class="section">
+    <div class="section-title"><span class="num">7</span> 서명 및 승인</div>
+    <div class="sign-grid">
+      <div class="sign-box">
+        <div class="sign-role">QA 담당자</div>
+        <div class="sign-name" contenteditable="true" data-ph="이름"></div>
+        <div class="sign-date" contenteditable="true" data-ph="날짜 (YYYY.MM.DD)"></div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-role">QA 리드 / 팀장</div>
+        <div class="sign-name" contenteditable="true" data-ph="이름"></div>
+        <div class="sign-date" contenteditable="true" data-ph="날짜 (YYYY.MM.DD)"></div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-role">PM / PO 확인</div>
+        <div class="sign-name" contenteditable="true" data-ph="이름"></div>
+        <div class="sign-date" contenteditable="true" data-ph="날짜 (YYYY.MM.DD)"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /report-wrap -->
+
+<script>
+function updateVerdict(el) {
+  const display = document.getElementById('verdict-display');
+  const map = {
+    deploy: { text: '배포 가능', cls: 'deploy' },
+    cond:   { text: '조건부 배포', cls: 'cond' },
+    hold:   { text: '배포 보류', cls: 'hold' }
+  };
+  const v = map[el.value];
+  display.textContent = v.text;
+  display.className = 'verdict-value ' + v.cls;
+}
+
+function addDefectRow() {
+  const tbody = document.getElementById('defect-body');
+  const rowCount = tbody.rows.length + 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td contenteditable="true">${rowCount}</td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td><span class="severity sev-low">Low</span></td>
+    <td><span class="status-badge st-open">Open</span></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>`;
+  tbody.appendChild(tr);
+}
+</script>
+</body>
+</html>
