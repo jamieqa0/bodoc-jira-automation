@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        h2 { color: #555; margin-top: 30px; }
+        .meta { background: #f5f5f5; padding: 10px; margin-bottom: 20px; }
+        .content { line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+
+    <div class="meta">
+        <strong>사용자:</strong> {{ user }}<br>
+        <strong>보고 월:</strong> {{ month }}<br>
+        <strong>생성일:</strong> {{ generated_date }}
+    </div>
+
+    <div class="content">
+        {{ content|safe }}
+    </div>
+
+    <hr>
+    <p><em>이 보고서는 자동 생성된 초안을 기반으로 합니다.</em></p>
+</body>
+</html>

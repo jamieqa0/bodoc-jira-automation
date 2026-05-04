@@ -11,7 +11,10 @@
       "Bash(python \"c:/Users/Jamie-I/Documents/bodoc-jira-automation/skills/qa-session-kpi/scripts/collect_sessions.py\" --days 7)",
       "Bash(python -c ' *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "WebSearch",
+      "Bash(pip install *)",
+      "Bash(python -c \"import anthropic, markdown; print\\('OK'\\)\")"
     ]
   }
 }

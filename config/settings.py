@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import datetime
 
 # 프로젝트 루트 경로 찾기
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,15 @@ class Settings:
     CONFLUENCE_QA_REPORT_PARENT_ID = os.getenv("CONFLUENCE_QA_REPORT_PARENT_ID")
     CONFLUENCE_TEST_PLAN_PARENT_ID = os.getenv("CONFLUENCE_TEST_PLAN_PARENT_ID")
     CONFLUENCE_MOR_PARENT_ID = os.getenv("CONFLUENCE_MOR_PARENT_ID")
-    ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
     # 경로 관련
     BASE_DIR = ROOT_DIR
     CORE_DIR = ROOT_DIR / "core"
     TEMPLATE_DIR = CORE_DIR / "templates"
+
+    def get_current_date(self):
+        """현재 날짜를 YYYY-MM-DD 형식으로 반환합니다."""
+        return datetime.now().strftime('%Y-%m-%d')
 
     def validate(self):
         """필수 환경 변수가 설정되어 있는지 검증합니다."""

@@ -82,7 +82,7 @@ class JiraClient:
             logging.error(f"Defect 데이터 가져오기 실패: {e}")
             return pd.DataFrame()
 
-    def fetch_user_issues(self, user_email, year_month):
+    def fetch_user_issues(self, user_email, year_month, quiet=False):
         """지정한 월에 사용자가 담당하거나 보고한 이슈를 가져옵니다."""
         import calendar
         year, month = map(int, year_month.split('-'))
