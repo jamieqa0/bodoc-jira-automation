@@ -24,6 +24,7 @@ jira-qa-automation/
 ## 🛠️ 설치 방법
 
 1. 필요한 라이브러리를 설치합니다.
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -35,11 +36,13 @@ jira-qa-automation/
 프로젝트 루트 디렉토리에서 실행해 주세요.
 
 ### 1. 테스트 플랜 생성
+
 ```bash
 python bin/run_test_plan.py SQA-122
 ```
 
 ### 2. QA 결과 보고서 생성
+
 ```bash
 python bin/run_qa_report.py SQA-119
 ```
@@ -51,3 +54,7 @@ python bin/run_qa_report.py SQA-119
 - **목록형 Jira 매크로**: 결함 상세 내역에 지라 리스트(JQL Query) 매크로를 적용하여 실시간 상태를 확인할 수 있습니다.
 - **프로젝트 명/버전 자동 추출**: 티켓 제목에서 `[보닥앱]`, `4.9.0` 등 정보를 파싱하여 요약 정보에 자동 반영합니다.
 - **해결률 자동 계산**: 완료 상태 이슈 비중을 계산하여 보고서에 포함합니다.
+
+## 💡 아틀라시안 토큰 발급 주소
+
+https://id.atlassian.com/manage-profile/security/api-tokens
