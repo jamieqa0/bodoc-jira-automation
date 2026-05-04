@@ -82,3 +82,42 @@ class JiraClient:
             logging.error(f"Defect 데이터 가져오기 실패: {e}")
             return pd.DataFrame()
 
+    def fetch_user_issues(self, user_email, year_month):
+        """지정한 월에 사용자가 담당하거나 보고한 이슈를 가져옵니다."""
+        import calendar
+        year, month = map(int, year_month.split('-'))
+        last_day = calendar.monthrange(year, month)[1]
+        start_date = f"{year_month}-01"
+        end_date = f"{year_month}-{last_day:02d}"
+
+        jql = (
+            f'(assignee = "{user_email}" OR reporter = "{user_email}") '
+            f'AND created >= "{start_date}" '
+            f'AND created <= "{end_date}" '
+            f'ORDER BY created DESC'
+        )
+        try:
+            issues = self.jira.search_issues(jql, maxResults=100,
+                                             fields='key,summary,status,priority,components,created,resolutiondate,comment')
+            result = []
+            for issue in issues:
+                comments = []
+                comment_field = getattr(issue.fields, 'comment', None)
+                if comment_field:
+                    for c in comment_field.comments[:3]:
+                        comments.append(c.body[:200])
+                result.append({
+                    'key': issue.key,
+                    'summary': issue.fields.summary,
+                    'status': issue.fields.status.name,
+                    'priority': issue.fields.priority.name if issue.fields.priority else 'None',
+                    'components': [comp.name for comp in getattr(issue.fields, 'components', [])],
+                    'created': str(issue.fields.created)[:10],
+                    'resolutiondate': str(issue.fields.resolutiondate)[:10] if issue.fields.resolutiondate else None,
+                    'comments': comments,
+                })
+            logging.info(f"{year_month} {user_email} 이슈 {len(result)}개 조회 완료")
+            return result
+        except Exception as e:
+            logging.error(f"fetch_user_issues 실패: {e}")
+            return []
