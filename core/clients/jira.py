@@ -97,7 +97,7 @@ class JiraClient:
             f'ORDER BY created DESC'
         )
         try:
-            issues = self.jira.search_issues(jql, maxResults=100,
+            issues = self.jira.search_issues(jql, maxResults=0,
                                              fields='key,summary,status,priority,components,created,resolutiondate,comment')
             result = []
             for issue in issues:
