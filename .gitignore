@@ -7,4 +7,5 @@ qa_report.html
 *.xlsx
 .venv/
 *.txt
+!requirements.txt
 *.png

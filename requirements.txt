@@ -1,0 +1,10 @@
+atlassian-python-api>=4.0.7
+jira>=3.10.5
+pandas>=3.0.0
+matplotlib>=3.10.8
+Jinja2>=3.1.6
+python-dotenv>=1.2.1
+requests>=2.32.5
+urllib3>=2.5.0
+anthropic>=0.49.0
+markdown>=3.8
