@@ -1,0 +1,57 @@
+{
+  "summary": {
+    "total_qa_activities": 92,
+    "session_count": 6,
+    "session_productivity": 15.3,
+    "verification_rate_pct": 0.0
+  },
+  "by_type": {
+    "fix_instruction": 38,
+    "analysis": 16,
+    "issue_found": 38
+  },
+  "by_date": {
+    "2026-04-24": {
+      "analysis": 12,
+      "fix_instruction": 9
+    },
+    "2026-04-27": {
+      "issue_found": 35,
+      "fix_instruction": 13
+    },
+    "2026-04-29": {
+      "analysis": 1,
+      "fix_instruction": 7
+    },
+    "2026-04-30": {
+      "fix_instruction": 6,
+      "analysis": 3,
+      "issue_found": 3
+    },
+    "2026-05-04": {
+      "fix_instruction": 3
+    }
+  },
+  "top_sessions": [
+    [
+      "6635a8fa",
+      38
+    ],
+    [
+      "f6160c92",
+      21
+    ],
+    [
+      "0de45e0f",
+      18
+    ],
+    [
+      "27ef61bd",
+      12
+    ],
+    [
+      "d17b29ce",
+      2
+    ]
+  ]
+}

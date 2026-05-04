@@ -1,0 +1,16 @@
+{
+  "C--Users-Jamie-I-Documents-requirement-driven-qa": {
+    "total": 90,
+    "counts": {
+      "analysis": 16,
+      "fix_instruction": 36,
+      "issue_found": 38
+    }
+  },
+  "c--Users-Jamie-I-Documents-bodoc-jira-automation": {
+    "total": 2,
+    "counts": {
+      "fix_instruction": 2
+    }
+  }
+}

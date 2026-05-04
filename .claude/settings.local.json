@@ -4,7 +4,14 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\" -Recurse -Force)",
       "Bash(Select-Object FullName, PSIsContainer)",
       "Bash(Sort-Object FullName)",
-      "Bash(Format-Table -AutoSize)"
+      "Bash(Format-Table -AutoSize)",
+      "Skill(skillers-suda:skillers-suda)",
+      "Skill(skillers-suda:skillers-suda:*)",
+      "PowerShell(head -50)",
+      "Bash(python \"c:/Users/Jamie-I/Documents/bodoc-jira-automation/skills/qa-session-kpi/scripts/collect_sessions.py\" --days 7)",
+      "Bash(python -c ' *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
