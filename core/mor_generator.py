@@ -37,81 +37,99 @@ class MorGenerator:
 
         # 기본 통계 계산
         total_issues = len(jira_issues)
-        resolved_issues = len([i for i in jira_issues if i.get('status') in ['Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료']])
+        resolved_statuses_list = ['Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료', 'Prod 배포완료']
+        resolved_issues = len([i for i in jira_issues if i.get('status') in resolved_statuses_list])
         total_pages = len(confluence_pages)
+        resolution_rate = (resolved_issues / total_issues * 100) if total_issues > 0 else 0
 
         # JQL 링크 생성
         year, month = map(int, year_month.split('-'))
         import calendar
+        from urllib.parse import quote
         last_day = calendar.monthrange(year, month)[1]
         start_date = f"{year_month}-01"
         end_date = f"{year_month}-{last_day:02d}"
 
-        # 전체 이슈 링크
-        all_issues_jql = f"assignee = \"{user_email}\" AND created >= \"{start_date}\" AND created <= \"{end_date}\""
-        all_issues_url = f"https://bodocqa.atlassian.net/issues/?jql={all_issues_jql.replace(' ', '%20').replace('\"', '%22')}"
+        # 전체 이슈 링크 (담당자 OR 보고자 OR SQA 프로젝트)
+        all_issues_jql = f"((assignee = \"{user_email}\" OR reporter = \"{user_email}\") OR project = \"SQA\") AND created >= \"{start_date}\" AND created <= \"{end_date}\""
+        all_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(all_issues_jql)}"
 
-        # 해결된 이슈 링크
-        resolved_statuses = ['Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료']
-        resolved_jql = f"assignee = \"{user_email}\" AND created >= \"{start_date}\" AND created <= \"{end_date}\" AND status in ({', '.join(f'\"{s}\"' for s in resolved_statuses)})"
-        resolved_issues_url = f"https://bodocqa.atlassian.net/issues/?jql={resolved_jql.replace(' ', '%20').replace('\"', '%22')}"
+        # 해결된 이슈 링크 (담당자 OR 보고자 OR SQA 프로젝트)
+        resolved_jql = f"((assignee = \"{user_email}\" OR reporter = \"{user_email}\") OR project = \"SQA\") AND created >= \"{start_date}\" AND created <= \"{end_date}\" AND status in ({', '.join(f'\"{s}\"' for s in resolved_statuses_list)})"
+        resolved_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(resolved_jql)}"
 
         # 템플릿 기반 MOR 내용 생성
-        mor_content = f"""## 1. 한 달 동안 진행한 업무
+        mor_content = f"""## 📊 1. 주요 업무 성과 요약
 
-{year_month}월 동안 총 [{total_issues}개의 Jira 이슈]({all_issues_url})를 처리하였습니다. 이 중 [{resolved_issues}개가 해결]({resolved_issues_url})되었으며, {total_pages}개의 Confluence 페이지를 작성하거나 수정하였습니다.
+{year_month}월 한 달간 총 **[{total_issues}건]({all_issues_url})**의 Jira 이슈를 처리하였으며, 그 중 **[{resolved_issues}건]({resolved_issues_url})**을 완료하였습니다. (해결률: **{resolution_rate:.1f}%**) 또한, **{total_pages}건**의 Confluence 문서를 작성 및 업데이트하여 팀 내 지식 공유에 기여하였습니다.
 
-주요 업무 내용:
 {jira_summary}
 
-## 2. 본인의 구체적인 담당 영역
+---
 
-프로젝트 관리 및 품질 보증 업무를 담당하였습니다. Jira 티켓 관리, 테스트 계획 수립, 그리고 Confluence를 통한 문서화 작업을 수행하였습니다.
+## 🏗️ 2. 본인의 구체적인 담당 영역
 
-## 3. 전문 기여 포인트
+- 
 
-자동화 스크립트 개발을 통해 업무 효율성을 향상시켰습니다. 특히 QA 보고서 자동 생성 기능과 테스트 플랜 자동화 기능을 구현하여 반복 작업을 줄였습니다.
+---
 
-## 4. 업무 진행의 의도 설명
+## 🚀 3. 전문 기여 포인트
 
-효율적인 프로젝트 관리를 위해 자동화 도구를 도입하고, 체계적인 문서화를 통해 팀 협업을 강화하고자 하였습니다. 데이터 기반 의사결정을 지원하기 위해 각종 지표 수집 및 분석 기능을 개발하였습니다.
+- 
 
-## 5. 문제 해결 또는 생산성 향상을 위한 노력
+---
 
-반복적인 업무를 자동화하여 생산성을 향상시키고, 실수 가능성을 줄였습니다. 특히 Jira/Confluence 연동을 통해 업무 흐름을 최적화하였습니다.
+## 🔍 4. 업무 진행의 의도 설명
 
-작성/수정한 문서:
+- 
+
+---
+
+## 🛠️ 5. 문제 해결 또는 생산성 향상을 위한 노력
+
+- 
+
+### 📝 주요 작성/수정 문서 (Top 10)
 {confluence_summary}
 """
 
         # 전체 초안 구성
-        draft = f"""# MOR Report 초안 - {year_month}
-
-**사용자:** {user_email}
-**생성일:** {settings.get_current_date()}
-
-{mor_content}
+        draft = f"""{mor_content}
 
 ---
-*이 초안은 템플릿 기반으로 자동 생성되었습니다. 검토 후 편집해주세요.*
+*본 보고서는 시스템에 의해 자동 생성된 초안입니다. 검토 후 최종 내용을 확정해 주시기 바랍니다.*
 """
 
         return draft
 
     def _summarize_jira_issues(self, issues):
-        """Jira 이슈를 요약 문자열로 변환 (링크 포함)"""
+        """Jira 이슈를 요약 문자열로 변환 (SQA와 일반 작업 분리)"""
         if not issues:
             return "해당 월에 처리한 Jira 이슈가 없습니다."
 
-        summary = []
-        for issue in issues[:10]:  # 최대 10개 요약
-            issue_url = f"https://bodocqa.atlassian.net/browse/{issue['key']}"
-            summary.append(f"- [{issue['key']}: {issue['summary']}]({issue_url}) ({issue['status']})")
+        sqa_tasks = [i for i in issues if i['key'].startswith('SQA-')]
+        general_tasks = [i for i in issues if not i['key'].startswith('SQA-')]
 
-        if len(issues) > 10:
-            summary.append(f"... 외 {len(issues) - 10}개")
+        def format_list(task_list, title):
+            if not task_list:
+                return ""
+            
+            lines = [f"### 🎯 {title}"]
+            for issue in task_list[:10]:
+                issue_url = f"https://bodocqa.atlassian.net/browse/{issue['key']}"
+                lines.append(f"- [[{issue['key']}]]({issue_url}) {issue['summary']} ({issue['status']})")
+            
+            if len(task_list) > 10:
+                lines.append(f"... 외 {len(task_list) - 10}개")
+            return "\n".join(lines)
 
-        return "\n".join(summary)
+        sections = []
+        if sqa_tasks:
+            sections.append(format_list(sqa_tasks, "주요 SQA 작업"))
+        if general_tasks:
+            sections.append(format_list(general_tasks, "기타 업무 및 작업"))
+
+        return "\n\n".join(sections)
 
     def _summarize_confluence_pages(self, pages):
         """Confluence 페이지를 요약 문자열로 변환 (링크 포함)"""

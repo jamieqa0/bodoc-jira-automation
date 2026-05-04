@@ -16,14 +16,11 @@ python bin/run_test_plan.py SQA-122
 # QA 결과 보고서 생성 → Confluence 게시 (차트 포함)
 python bin/run_qa_report.py SQA-119
 
-# MOR 초안 바로 Confluence에 게시 (편집용)
-python bin/run_mor_report.py --month 2026-04 --user jamie@aijinet.com --publish --quiet
+# MOR Report 생성 및 Confluence 게시 (초안)
+python bin/run_mor_report.py --month 2026-04 --publish
 
-# MOR 초안 생성 (로컬 파일 저장)
-python bin/run_mor_report.py --month 2026-04 --user jamie@aijinet.com
-
-# MOR 최종 버전 게시 (로컬 파일에서 읽어서 게시)
-python bin/publish_mor.py --month 2026-04 --user jamie@aijinet.com
+# (필요시) 로컬 마크다운 파일을 읽어서 게시
+python bin/run_mor_report.py --month 2026-04 --draft mor_draft_2026-04.md --publish
 
 # 모든 명령어에 --quiet 옵션 추가 시 간단한 출력만 표시 (SUCCESS/ERROR)
 ```
@@ -46,15 +43,8 @@ API 토큰 발급: https://id.atlassian.com/manage-profile/security/api-tokens
 
 ## MOR 워크플로우
 
-### 추천 워크플로우 (Confluence 편집)
-1. **초안 생성 및 게시**: `python bin/run_mor_report.py --month 2026-04 --user jamie@aijinet.com --publish`
-2. **Confluence에서 편집**: 생성된 "MOR 초안" 페이지를 웹에서 직접 수정
-3. **최종 게시**: `python bin/publish_mor.py --month 2026-04 --user jamie@aijinet.com`
-
-### 기존 워크플로우 (로컬 편집)
-1. **초안 생성**: `python bin/run_mor_report.py --month 2026-04 --user jamie@aijinet.com`
-2. **로컬 편집**: `mor_draft_2026-04.md` 파일을 텍스트 에디터로 수정
-3. **게시**: `python bin/publish_mor.py --month 2026-04 --user jamie@aijinet.com`
+1. **데이터 기반 초안 생성 및 게시**: `python bin/run_mor_report.py --month 2026-04 --publish`
+2. **Confluence에서 직접 편집**: 생성된 "MOR 초안" 페이지를 웹에서 직접 수정하여 최종 확정 (이후 별도 스크립트 실행 불필요)
 
 ## 아키텍처
 
@@ -72,27 +62,20 @@ bin/run_*.py (진입점)
 
 MOR 기능 아키텍처:
 ```
-bin/run_mor_report.py --month YYYY-MM [--user email]
-  → JiraClient.fetch_user_issues(user, month)
-      JQL: (assignee = "user" OR reporter = "user") AND created >= "YYYY-MM-01" AND created <= "YYYY-MM-last"
-      → List of issues (key, summary, status, priority, components, created, resolutiondate, comments)
-  → ConfluenceClient.fetch_user_pages(user, month)
-      CQL: (creator = "user" OR lastModifier = "user") AND (created >= "YYYY-MM-01" OR lastModified >= "YYYY-MM-01")
-      → List of pages (title, space, created, lastModified, url, excerpt)
-  → MorGenerator.generate_draft(data)
-      → 템플릿 기반 MOR 5항목 서술
-      → mor_draft_YYYY-MM.md 로컬 저장
-
-bin/run_mor_report.py --month YYYY-MM [--user email] --publish
-  → 위와 동일한 데이터 수집 + 초안 생성
-  → Markdown → HTML 변환
-  → Confluence에 "MOR 초안" 페이지 생성 (편집용)
-
-bin/publish_mor.py --month YYYY-MM [--user email]
-  → mor_draft_YYYY-MM.md 읽기
-  → Markdown → HTML 변환
-  → Jinja2 템플릿 렌더링 (core/templates/mor_template.html)
-  → ConfluenceClient.publish_page() → MOR Report 페이지 생성/업데이트
+bin/run_mor_report.py --month YYYY-MM [--user email] [--publish] [--draft file.md]
+  1. 데이터 로드 (draft 미지정 시):
+     → JiraClient.fetch_user_issues(user, month)
+     → ConfluenceClient.fetch_user_pages(user, month)
+     → MorGenerator.generate_draft(data)
+  2. 내용 준비:
+     → draft 지정 시: 파일에서 내용 읽기
+     → draft 미지정 시: 위에서 생성된 내용 사용
+  3. 출력/게시:
+     → publish 지정 시:
+        → Markdown → HTML 변환
+        → Jinja2 템플릿 렌더링 (core/templates/mor_template.html)
+        → ConfluenceClient.publish_page() → MOR Report 페이지 생성/업데이트
+     → publish 미지정 시: mor_draft_YYYY-MM.md 로컬 저장
 ```
 
 ### 핵심 모듈
