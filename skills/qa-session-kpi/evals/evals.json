@@ -1,0 +1,47 @@
+{
+  "skill_name": "qa-session-kpi",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "오늘 QA 활동 요약해줘. 이번 주에 뭘 했는지 보고 싶어.",
+      "expected_output": "Claude Code 세션 로그를 수집하고, 활동 유형(이슈발견/수정지시/검증/테스트케이스/분석)으로 분류한 후 KPI 요약 보고서를 생성한다.",
+      "should_trigger": true,
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "내 QA KPI 보고서 만들어줘. 최근 30일 기준으로 해줘.",
+      "expected_output": "--days 30 옵션으로 세션 로그를 수집하고, KPI 지표를 계산하여 Markdown 보고서를 생성한다.",
+      "should_trigger": true,
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "바이브코딩에서 내 기여가 얼마나 되는지 측정해줘. bodoc-jira-automation 프로젝트만.",
+      "expected_output": "--project bodoc-jira-automation 필터로 세션 로그를 수집하고 활동량을 분석한다.",
+      "should_trigger": true,
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "이번 주 내가 발견한 버그 중에 검증까지 완료된 비율이 얼마야?",
+      "expected_output": "세션 로그에서 issue_found와 verification 건수를 집계하여 검증 완료율(%)을 계산하고 보고한다.",
+      "should_trigger": true,
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Python에서 단위 테스트 작성하는 방법 알려줘.",
+      "expected_output": "이 스킬을 트리거하지 않아야 한다. 단순 기술 질문이므로 스킬 없이 답변한다.",
+      "should_trigger": false,
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Jira SQA-200 이슈 상태 어떻게 되어 있어?",
+      "expected_output": "이 스킬을 트리거하지 않아야 한다. Jira 이슈 조회는 qa-session-kpi 스킬의 범위가 아니다.",
+      "should_trigger": false,
+      "files": []
+    }
+  ]
+}
