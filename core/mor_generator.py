@@ -113,12 +113,12 @@ class MorGenerator:
         def format_list(task_list, title):
             if not task_list:
                 return ""
-            
+
             lines = [f"### 🎯 {title}"]
             for issue in task_list[:10]:
-                issue_url = f"https://bodocqa.atlassian.net/browse/{issue['key']}"
+                issue_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/browse/{issue['key']}"
                 lines.append(f"- [[{issue['key']}]]({issue_url}) {issue['summary']} ({issue['status']})")
-            
+
             if len(task_list) > 10:
                 lines.append(f"... 외 {len(task_list) - 10}개")
             return "\n".join(lines)
@@ -138,8 +138,7 @@ class MorGenerator:
 
         summary = []
         for page in pages[:10]:  # 최대 10개 요약
-            page_url = f"https://bodocqa.atlassian.net/wiki/spaces/{page['space']['key']}/pages/{page['id']}"
-            summary.append(f"- [{page['title']}]({page_url}) ({page['space']['name']}) - {page.get('lastModified', page.get('created', 'N/A'))}")
+            summary.append(f"- [{page['title']}]({page['url']}) ({page['space']}) - {page.get('lastModified', page.get('created', 'N/A'))}")
 
         if len(pages) > 10:
             summary.append(f"... 외 {len(pages) - 10}개")
