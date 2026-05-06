@@ -19,7 +19,9 @@
       "PowerShell(Select-String -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\\\\mor_draft_2026-04.md\" -Pattern \"Confluence|페이지\" | Select-Object -First 20 | ForEach-Object { $_.Line })",
       "PowerShell(Select-String -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\\\\mor_draft_2026-04.md\" -Pattern \"Confluence\" | Select-Object -First 3 | ForEach-Object { $_.Line })",
       "PowerShell(Set-Content *)",
-      "PowerShell(Get-Content *)"
+      "PowerShell(Get-Content *)",
+      "Bash(python skills/qa-session-kpi/scripts/collect_sessions.py --days 14)",
+      "Bash(python *)"
     ]
   }
 }

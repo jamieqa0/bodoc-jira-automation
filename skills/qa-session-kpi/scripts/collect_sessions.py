@@ -19,18 +19,28 @@ def parse_jsonl_file(filepath: Path) -> list[dict]:
                 except json.JSONDecodeError:
                     continue
 
-                # Handle multiple possible session formats
-                role = entry.get("role") or entry.get("type")
-                content = entry.get("content", "")
+                # New format: type="user" with content nested in "message"
+                entry_type = entry.get("type")
+                if entry_type == "user":
+                    if entry.get("isMeta"):
+                        continue
+                    msg = entry.get("message", {})
+                    content = msg.get("content", "")
+                else:
+                    # Legacy format: role="user" with content at top level
+                    role = entry.get("role")
+                    if role != "user":
+                        continue
+                    content = entry.get("content", "")
 
-                # Some formats wrap content in a list
+                # Content may be a list of blocks
                 if isinstance(content, list):
                     content = " ".join(
                         c.get("text", "") if isinstance(c, dict) else str(c)
                         for c in content
                     )
 
-                if role == "user" and content:
+                if content:
                     messages.append({
                         "timestamp": entry.get("timestamp", ""),
                         "content": str(content)[:2000],
@@ -79,7 +89,8 @@ def main():
     args = parser.parse_args()
 
     result = collect(args.days, args.project)
-    print(json.dumps(result, ensure_ascii=False))
+    sys.stdout.buffer.write(json.dumps(result, ensure_ascii=False).encode("utf-8"))
+    sys.stdout.buffer.write(b"\n")
 
 
 if __name__ == "__main__":
