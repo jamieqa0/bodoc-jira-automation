@@ -1,3 +1,4 @@
+import calendar
 import urllib.parse
 from collections import Counter
 from jinja2 import Environment, FileSystemLoader
@@ -5,10 +6,6 @@ import os
 from config.settings import settings
 
 class AnnualGenerator:
-    RESOLVED_STATUSES = {
-        'Prod 배포완료', '종료', 'Resolved', 'Closed', 'Done',
-        'Verified', '해결됨', '완료', '종료됨',
-    }
     PRIORITY_ORDER = ['Highest', 'High', 'Medium', 'Low', 'Lowest', 'None']
 
     def __init__(self):
@@ -110,7 +107,7 @@ class AnnualGenerator:
             'sqa_peak_count': sqa_monthly_counts.get(sqa_peak, 0),
             'sqa_types': [(t, c, self._jql_url(f'{JQL_SQA} AND issuetype = "{t}"')) for t, c in sqa_type_counts.most_common()],
             'sqa_statuses': [(s, c, self._jql_url(f'{JQL_SQA} AND status = "{s}"')) for s, c in sqa_status_counts.most_common()],
-            'sqa_monthly': [(month_label(m), c, self._jql_url(f'{JQL_SQA} AND created >= "{m}-01" AND created <= "{m}-31"')) for m, c in sorted(sqa_monthly_counts.items())],
+            'sqa_monthly': [(month_label(m), c, self._jql_url(f'{JQL_SQA} AND created >= "{m}-01" AND created <= "{m}-{calendar.monthrange(int(m[:4]), int(m[5:]))[1]:02d}"')) for m, c in sorted(sqa_monthly_counts.items())],
             'defect_resolved': def_resolved,
             'defect_rate': def_rate,
             'high_prio_count': high_prio_count,
@@ -124,7 +121,7 @@ class AnnualGenerator:
             'defect_project_ratios': defect_project_ratios,
             'defect_priorities': [(p, def_priority_counts[p], self._jql_url(f'{JQL_DEF} AND priority = "{p}"')) for p in self.PRIORITY_ORDER if p in def_priority_counts],
             'defect_statuses': [(s, c, self._jql_url(f'{JQL_DEF} AND status = "{s}"')) for s, c in def_status_counts.most_common()],
-            'defect_monthly': [(month_label(m), c, self._jql_url(f'{JQL_DEF} AND created >= "{m}-01" AND created <= "{m}-31"')) for m, c in sorted(def_monthly_counts.items())],
+            'defect_monthly': [(month_label(m), c, self._jql_url(f'{JQL_DEF} AND created >= "{m}-01" AND created <= "{m}-{calendar.monthrange(int(m[:4]), int(m[5:]))[1]:02d}"')) for m, c in sorted(def_monthly_counts.items())],
             'pages': pages,
             'summary_title': summary_title,
             'period_desc': period_desc,

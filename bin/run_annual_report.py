@@ -26,12 +26,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.generators.annual_report_generator import AnnualGenerator
 from core.clients.jira import JiraClient
 from core.clients.confluence import ConfluenceClient
+from core.utils import RESOLVED_STATUSES
 from config.settings import settings
-
-RESOLVED_STATUSES = {
-    'Prod 배포완료', '종료', 'Resolved', 'Closed', 'Done',
-    'Verified', '해결됨', '완료', '종료됨',
-}
 
 def is_resolved(iss):
     return (

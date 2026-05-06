@@ -3,8 +3,10 @@ MOR Report 초안 생성 모듈
 템플릿 기반으로 Jira/Confluence 데이터를 기반으로 MOR 5항목을 생성합니다.
 """
 
+import calendar
 import os
 from config.settings import settings
+from core.utils import RESOLVED_STATUSES
 
 
 class MorGenerator:
@@ -41,15 +43,16 @@ class MorGenerator:
         sqa_count = len(sqa_tasks)
         defect_count = len(defect_issues)
         
-        resolved_statuses_list = ['Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료', 'Prod 배포완료']
-        resolved_issues = len([i for i in jira_issues if i.get('status') in resolved_statuses_list])
+        resolved_issues = len([
+            i for i in jira_issues
+            if i.get('status') in RESOLVED_STATUSES or i.get('resolutiondate') is not None
+        ])
         total_pages = len(confluence_pages)
         total_issues = len(jira_issues)
         resolution_rate = (resolved_issues / total_issues * 100) if total_issues > 0 else 0
 
         # JQL 링크 생성
         year, month = map(int, year_month.split('-'))
-        import calendar
         from urllib.parse import quote
         last_day = calendar.monthrange(year, month)[1]
         start_date = f"{year_month}-01"
@@ -65,7 +68,7 @@ class MorGenerator:
         all_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(all_jql)}"
 
         # 해결된 이슈 링크
-        resolved_jql = f"({all_jql}) AND status in ({', '.join(f'\"{s}\"' for s in resolved_statuses_list)})"
+        resolved_jql = f"({all_jql}) AND status in ({', '.join(f'\"{s}\"' for s in RESOLVED_STATUSES)})"
         resolved_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(resolved_jql)}"
 
         jira_summary = self._summarize_jira_issues(jira_issues, defect_url)

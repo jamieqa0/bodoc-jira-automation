@@ -32,8 +32,7 @@ def publish_to_confluence(confluence_client, content, user_email, year_month, di
     html_content = markdown.markdown(content, extensions=['tables', 'fenced_code'])
 
     # Confluence 템플릿 적용
-    template_dir = os.path.join(os.path.dirname(__file__), '..', 'core', 'templates')
-    env = Environment(loader=FileSystemLoader(template_dir))
+    env = Environment(loader=FileSystemLoader(str(settings.TEMPLATE_DIR)))
     template = env.get_template('mor_report.html')
 
     # 타이틀 형식 변경: MOR 초안 2025-09 - jamie

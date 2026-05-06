@@ -6,8 +6,7 @@ import platform
 from jinja2 import Environment, FileSystemLoader
 from config.settings import settings
 from core.clients.jira import JiraClient
-from core.clients.confluence import ConfluenceClient
-from core.utils import extract_version, format_date, extract_project_name
+from core.utils import extract_version, format_date, extract_project_name, RESOLVED_STATUSES
 
 # 한글 폰트 설정
 if platform.system() == 'Windows':
@@ -19,9 +18,8 @@ else:
 plt.rcParams['axes.unicode_minus'] = False
 
 class QAReportGenerator:
-    def __init__(self, jira_client=None, confluence_client=None):
+    def __init__(self, jira_client=None):
         self.jira = jira_client or JiraClient(settings.ATLASSIAN_URL, settings.ATLASSIAN_USER, settings.ATLASSIAN_API_TOKEN)
-        self.confluence = confluence_client or ConfluenceClient(settings.ATLASSIAN_URL, settings.ATLASSIAN_USER, settings.ATLASSIAN_API_TOKEN)
         self.jinja_env = Environment(loader=FileSystemLoader(str(settings.TEMPLATE_DIR)))
 
     def analyze_data(self, df):
@@ -93,8 +91,7 @@ class QAReportGenerator:
         total_general = len(df_general)
 
         # 해결률: Amplitude 이슈는 별도 관리이므로 일반 결함 기준으로만 계산
-        resolved_statuses = ['Prod 배포완료', 'Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료']
-        resolved_count = len(df_general[df_general['Status'].isin(resolved_statuses)]) if not df_general.empty else 0
+        resolved_count = len(df_general[df_general['Status'].isin(RESOLVED_STATUSES)]) if not df_general.empty else 0
         res_rate = (resolved_count / total_general * 100) if total_general > 0 else 0
 
         # 담당자 목록

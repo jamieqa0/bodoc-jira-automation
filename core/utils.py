@@ -1,6 +1,12 @@
 import re
 from datetime import datetime
 
+# 이슈 해결 완료로 간주하는 상태 목록 (CLAUDE.md 비즈니스 규칙)
+RESOLVED_STATUSES = frozenset([
+    'Prod 배포완료','QA패스', 'Resolved', 'Closed', 'Done', 'Verified',
+    '해결됨', '완료', '종료', '종료됨',
+])
+
 def extract_version(text):
     """
     텍스트에서 버전 정보를 추출합니다 (예: MAINTENANCE_4.9.1 QA -> 4.9.1)

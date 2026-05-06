@@ -49,17 +49,13 @@ class JiraClient:
         jql = f'issue in linkedIssues("{qa_task_key}") AND issuetype = Defect'
         try:
             data = []
-            next_token = None
-            page_size = 50
+            start_at = 0
+            page_size = 100
             while True:
-                kwargs = {'maxResults': page_size}
-                if next_token:
-                    kwargs['nextPageToken'] = next_token
-                
-                issues = self.jira.enhanced_search_issues(jql, **kwargs)
+                issues = self.jira.search_issues(jql, startAt=start_at, maxResults=page_size,
+                                                 fields='key,summary,status,priority,reporter,created')
                 if not issues:
                     break
-                    
                 for issue in issues:
                     data.append({
                         'Key': issue.key,
@@ -69,11 +65,9 @@ class JiraClient:
                         'Reporter': issue.fields.reporter.displayName if issue.fields.reporter else 'Unknown',
                         'Created': pd.to_datetime(issue.fields.created)
                     })
-                
-                next_token = getattr(issues, 'nextPageToken', None)
-                if not next_token:
+                start_at += len(issues)
+                if len(issues) < page_size:
                     break
-                    
             logging.info(f"총 {len(data)}개 Defect 조회 완료 (프로젝트 무관, 링크 기반)")
             return pd.DataFrame(data)
         except Exception as e:

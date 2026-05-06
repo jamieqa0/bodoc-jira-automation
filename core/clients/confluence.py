@@ -1,6 +1,8 @@
-from atlassian import Confluence
+import calendar
 import logging
 import io
+import re
+from atlassian import Confluence
 
 class ConfluenceClient:
     def __init__(self, url, user, token):
@@ -121,7 +123,6 @@ class ConfluenceClient:
 
     def fetch_user_pages(self, user_email, year_month, quiet=False):
         """지정한 월에 사용자가 생성하거나 마지막으로 수정한 페이지를 가져옵니다."""
-        import calendar
         year, month = map(int, year_month.split('-'))
         last_day = calendar.monthrange(year, month)[1]
         start_date = f"{year_month}-01"
@@ -146,7 +147,6 @@ class ConfluenceClient:
 
             result = []
             for page in pages:
-                import re
                 c = page.get('content', {})
                 hist = c.get('history', {})
                 last_mod = hist.get('lastModified', {})
@@ -158,7 +158,8 @@ class ConfluenceClient:
                     body_html = full['body']['storage']['value']
                     clean_text = re.sub(r'<[^>]+>', '', body_html)
                     excerpt = clean_text[:300] + "..." if len(clean_text) > 300 else clean_text
-                except:
+                except Exception as e:
+                    logging.debug(f"본문 로드 실패 (page_id={page_id}): {e}")
                     excerpt = "본문 로드 실패"
 
                 result.append({
