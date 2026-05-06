@@ -28,7 +28,7 @@ class QAReportGenerator:
         """상태 및 우선순위별 데이터 분석"""
         if df.empty: return None, None, None
         
-        amp_mask = df['Summary'].str.contains(r'\[Amplitude\]', case=False, na=False)
+        amp_mask = df['Summary'].str.contains(r'Amplitude', case=False, na=False) if not df.empty else []
         return df['Status'].value_counts(), df['Priority'].value_counts(), df[amp_mask]['Status'].value_counts() if any(amp_mask) else None
 
     def generate_charts(self, status_counts, priority_counts, amp_status_counts=None):
@@ -75,7 +75,7 @@ class QAReportGenerator:
     def create_report_html(self, df, status_counts, priority_counts, test_info, charts):
         """Jinja2 템플릿을 사용하여 HTML 리포트 생성"""
         total = len(df)
-        amp_mask = df['Summary'].str.contains(r'\[Amplitude\]', case=False, na=False) if not df.empty else []
+        amp_mask = df['Summary'].str.contains(r'Amplitude', case=False, na=False) if not df.empty else []
         
         # 해결률 계산
         resolved_statuses = ['Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료']

@@ -94,7 +94,7 @@ class AnnualGenerator:
             'high_prio_count': high_prio_count,
             'high_prio_url': self._jql_url(f'{JQL_DEF} AND priority in (Highest, High)'),
             'amplitude_count': amplitude_count,
-            'amplitude_url': self._jql_url(f'{JQL_DEF} AND summary ~ "[Amplitude]"'),
+            'amplitude_url': self._jql_url(f'{JQL_DEF} AND summary ~ "Amplitude"'),
             'defect_peak_label': month_label(def_peak),
             'defect_peak_count': def_monthly_counts.get(def_peak, 0),
             'defect_projects': [(p, c, self._jql_url(f'{JQL_DEF} AND project = "{p}"')) for p, c in def_project_counts.most_common()],

@@ -92,7 +92,7 @@ def main():
             'month':        str(iss.fields.created)[:7],
             'resolved':     is_resolved(iss),
         }
-        if re.search(r'\[amplitude\]', iss.fields.summary, re.IGNORECASE):
+        if re.search(r'amplitude', iss.fields.summary, re.IGNORECASE):
             d['amplitude'] = True
         (sqa_issues if iss.fields.project.key == 'SQA' else defect_issues).append(d)
 
