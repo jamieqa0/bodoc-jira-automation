@@ -66,6 +66,29 @@ class ConfluenceClient:
             logging.error(f"파일 첨부 실패 ({filename}): {e}")
             return None
 
+    def get_user_info(self, user_email):
+        """이메일로 accountId와 displayName을 조회합니다."""
+        try:
+            result = self.confluence.get("rest/api/user/current")
+            if isinstance(result, dict) and result.get('email', '').lower() == user_email.lower():
+                return {
+                    'accountId': result.get('accountId', user_email),
+                    'displayName': result.get('displayName', user_email),
+                }
+            results = self.confluence.get(f"rest/api/user/search?query={user_email}")
+            if isinstance(results, list) and results:
+                return {
+                    'accountId': results[0].get('accountId', user_email),
+                    'displayName': results[0].get('displayName', user_email),
+                }
+        except Exception as e:
+            logging.warning(f"사용자 정보 조회 실패, email로 대체: {e}")
+        return {'accountId': user_email, 'displayName': user_email}
+
+    def _get_account_id(self, user_email):
+        """이메일로 Confluence accountId를 조회합니다. 실패 시 이메일 그대로 반환."""
+        return self.get_user_info(user_email)['accountId']
+
     def fetch_user_pages(self, user_email, year_month, quiet=False):
         """지정한 월에 사용자가 생성하거나 마지막으로 수정한 페이지를 가져옵니다."""
         import calendar
@@ -74,9 +97,13 @@ class ConfluenceClient:
         start_date = f"{year_month}-01"
         end_date = f"{year_month}-{last_day:02d}"
 
+        # Atlassian Cloud CQL은 이메일 대신 accountId를 요구함
+        account_id = self._get_account_id(user_email)
+
         # CQL 쿼리: creator 또는 lastModifier가 user이고, created 또는 lastModified가 해당 월
         cql = (
-            f'(creator = "{user_email}" OR lastModifier = "{user_email}") '
+            f'type = page AND (creator = "{account_id}" OR lastModifier = "{account_id}") '
+            f'AND space.type = "global" '
             f'AND (created >= "{start_date}" OR lastModified >= "{start_date}") '
             f'AND (created <= "{end_date}" OR lastModified <= "{end_date}") '
             'ORDER BY lastModified DESC'
@@ -89,24 +116,27 @@ class ConfluenceClient:
 
             result = []
             for page in pages:
-                # 본문 excerpt 가져오기 (선택적)
+                import re
+                c = page.get('content', {})
+                hist = c.get('history', {})
+                last_mod = hist.get('lastModified', {})
+
+                page_id = c.get('id', '')
                 excerpt = ""
                 try:
-                    content = self.confluence.get_page_by_id(page['content']['id'], expand='body.storage')
-                    body_html = content['body']['storage']['value']
-                    # 간단한 excerpt (HTML 태그 제거 후 300자)
-                    import re
+                    full = self.confluence.get_page_by_id(page_id, expand='body.storage')
+                    body_html = full['body']['storage']['value']
                     clean_text = re.sub(r'<[^>]+>', '', body_html)
                     excerpt = clean_text[:300] + "..." if len(clean_text) > 300 else clean_text
                 except:
                     excerpt = "본문 로드 실패"
 
                 result.append({
-                    'title': page['content']['title'],
-                    'space': page['content']['space']['name'],
-                    'created': page['content']['history']['createdDate'][:10],
-                    'lastModified': page['content']['history']['lastModified']['when'][:10],
-                    'url': f"{self.url}{page['content']['_links']['webui']}",
+                    'title': c.get('title', ''),
+                    'space': c.get('space', {}).get('name', ''),
+                    'created': hist.get('createdDate', '')[:10],
+                    'lastModified': last_mod.get('when', '')[:10] if isinstance(last_mod, dict) else '',
+                    'url': f"{self.url}{c.get('_links', {}).get('webui', '')}",
                     'excerpt': excerpt
                 })
 
