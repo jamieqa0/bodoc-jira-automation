@@ -10,23 +10,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # 의존성 설치
 pip install -r requirements.txt
 
+# Jira 연결 및 설정 디버깅
+python bin/debug_jira.py
+
 # 테스트 플랜 생성 → Confluence 게시
 python bin/run_test_plan.py SQA-122
 
 # QA 결과 보고서 생성 → Confluence 게시 (차트 포함)
 python bin/run_qa_report.py SQA-119
 
-# MOR Report 초안만 로컬 파일로 생성 (mor_draft_YYYY-MM.md)
-python bin/run_mor_report.py --month 2026-04
-
 # MOR Report 생성 및 Confluence 게시 (초안)
 python bin/run_mor_report.py --month 2026-04 --publish
-
-# Jira 연결 및 설정 디버깅
-python bin/debug_jira.py
-
-# (필요시) 로컬 마크다운 파일을 읽어서 게시
-python bin/run_mor_report.py --month 2026-04 --draft mor_draft_2026-04.md --publish
 
 # 모든 명령어에 --quiet 옵션 추가 시 간단한 출력만 표시 (SUCCESS/ERROR)
 ```
@@ -35,16 +29,16 @@ python bin/run_mor_report.py --month 2026-04 --draft mor_draft_2026-04.md --publ
 
 프로젝트 루트에 `.env` 파일이 있어야 실행됩니다. `.env.sample` 참고:
 
-| 변수 | 필수 | 설명 |
-|------|------|------|
-| `ATLASSIAN_URL` | O | Jira/Confluence 도메인 (예: `https://bodocqa.atlassian.net`) |
-| `ATLASSIAN_USER` | O | Atlassian 계정 이메일 |
-| `ATLASSIAN_API_TOKEN` | O | Atlassian API 토큰 |
-| `JIRA_PROJECT_KEY` | - | Jira 프로젝트 키 (기본값: `APTS`) |
-| `CONFLUENCE_SPACE_KEY` | - | Confluence 공간 키 |
-| `CONFLUENCE_QA_REPORT_PARENT_ID` | - | QA Report 페이지 부모 ID |
-| `CONFLUENCE_TEST_PLAN_PARENT_ID` | - | Test Plan 페이지 부모 ID |
-| `CONFLUENCE_MOR_PARENT_ID` | - | MOR Report 페이지 부모 ID |
+| 변수                             | 필수 | 설명                                                         |
+| -------------------------------- | ---- | ------------------------------------------------------------ |
+| `ATLASSIAN_URL`                  | O    | Jira/Confluence 도메인 (예: `https://bodocqa.atlassian.net`) |
+| `ATLASSIAN_USER`                 | O    | Atlassian 계정 이메일                                        |
+| `ATLASSIAN_API_TOKEN`            | O    | Atlassian API 토큰                                           |
+| `JIRA_PROJECT_KEY`               | -    | Jira 프로젝트 키 (기본값: `APTS`)                            |
+| `CONFLUENCE_SPACE_KEY`           | -    | Confluence 공간 키                                           |
+| `CONFLUENCE_QA_REPORT_PARENT_ID` | -    | QA Report 페이지 부모 ID                                     |
+| `CONFLUENCE_TEST_PLAN_PARENT_ID` | -    | Test Plan 페이지 부모 ID                                     |
+| `CONFLUENCE_MOR_PARENT_ID`       | -    | MOR Report 페이지 부모 ID                                    |
 
 API 토큰 발급: https://id.atlassian.com/manage-profile/security/api-tokens
 
@@ -68,6 +62,7 @@ bin/run_*.py (진입점)
 ```
 
 MOR 기능 아키텍처:
+
 ```
 bin/run_mor_report.py --month YYYY-MM [--user email] [--publish] [--draft file.md]
   1. 데이터 로드 (draft 미지정 시):
