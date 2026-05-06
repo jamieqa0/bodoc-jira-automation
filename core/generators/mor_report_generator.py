@@ -32,7 +32,6 @@ class MorGenerator:
     def _generate_with_template(self, jira_issues, confluence_pages, user_email, year_month):
         """템플릿 기반으로 MOR 초안 생성"""
         # 데이터 요약
-        jira_summary = self._summarize_jira_issues(jira_issues)
         confluence_summary = self._summarize_confluence_pages(confluence_pages)
 
         # 세부 통계 계산
@@ -69,36 +68,14 @@ class MorGenerator:
         resolved_jql = f"({all_jql}) AND status in ({', '.join(f'\"{s}\"' for s in resolved_statuses_list)})"
         resolved_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(resolved_jql)}"
 
+        jira_summary = self._summarize_jira_issues(jira_issues, defect_url)
+
         # 템플릿 기반 MOR 내용 생성
         mor_content = f"""## 📊 1. 주요 업무 성과 요약
 
-{year_month}월 한 달간 **QA 작업관리(SQA) [{sqa_count}건]({sqa_url})** 및 **프로젝트 결함 검출 [{defect_count}건]({defect_url})**을 포함하여 총 **[{total_issues}건]({all_issues_url})**의 Jira 이슈를 처리했습니다. 그 중 **[{resolved_issues}건]({resolved_issues_url})**을 완료하여 **{resolution_rate:.1f}%**의 해결률을 기록하였으며, **{total_pages}건**의 Confluence 문서를 기여했습니다.
+{year_month}월 한 달간 **QA 작업(SQA) [{sqa_count}건]({sqa_url})** 및 **프로젝트 결함 검출 [{defect_count}건]({defect_url})**을 포함하여 총 **[{total_issues}건]({all_issues_url})**의 Jira 이슈를 처리했습니다. 그 중 **[{resolved_issues}건]({resolved_issues_url})**을 완료하여 **{resolution_rate:.1f}%**의 해결률을 기록하였으며, **{total_pages}건**의 Confluence 문서를 기여했습니다.
 
 {jira_summary}
-
----
-
-## 🏗️ 2. 본인의 구체적인 담당 영역
-
-- 
-
----
-
-## 🚀 3. 전문 기여 포인트
-
-- 
-
----
-
-## 🔍 4. 업무 진행의 의도 설명
-
-- 
-
----
-
-## 🛠️ 5. 문제 해결 또는 생산성 향상을 위한 노력
-
-- 
 
 ### 📝 주요 작성/수정 문서 (Top 10)
 {confluence_summary}
@@ -108,37 +85,79 @@ class MorGenerator:
         draft = f"""{mor_content}
 
 ---
-*본 보고서는 시스템에 의해 자동 생성된 초안입니다. 검토 후 최종 내용을 확정해 주시기 바랍니다.*
+
+### 🏗️ 2. 본인의 구체적인 담당 영역
+
+- 
+
+
+### 🚀 3. 전문 기여 포인트
+
+- 
+
+
+### 🔍 4. 업무 진행의 의도 설명
+
+- 
+
+
+### 🛠️ 5. 문제 해결 또는 생산성 향상을 위한 노력
+
+- 
+
+
+
+---
+
 """
 
         return draft
 
-    def _summarize_jira_issues(self, issues):
+    def _summarize_jira_issues(self, issues, defect_url=None):
         """Jira 이슈를 요약 문자열로 변환 (SQA와 일반 작업 분리)"""
         if not issues:
             return "해당 월에 처리한 Jira 이슈가 없습니다."
 
+        priority_rank = {'Highest': 0, 'High': 1, 'Medium': 2, 'Low': 3, 'Lowest': 4}
+
         sqa_tasks = [i for i in issues if i['key'].startswith('SQA-')]
         general_tasks = [i for i in issues if not i['key'].startswith('SQA-')]
 
-        def format_list(task_list, title):
+        def format_sqa_list(task_list, title):
             if not task_list:
                 return ""
-
             lines = [f"### 🎯 {title}"]
             for issue in task_list[:10]:
                 issue_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/browse/{issue['key']}"
-                lines.append(f"- [[{issue['key']}]]({issue_url}) {issue['summary']} ({issue['status']})")
-
+                assignee = issue.get('assignee') or ''
+                assignee_str = f", 메인담당자 : {assignee}" if assignee else ""
+                lines.append(f"- [[{issue['key']}]]({issue_url}) {issue['summary']} ({issue['status']}{assignee_str})")
             if len(task_list) > 10:
                 lines.append(f"... 외 {len(task_list) - 10}개")
             return "\n".join(lines)
 
+        def format_general_list(task_list, title):
+            if not task_list:
+                return ""
+            sorted_tasks = sorted(task_list, key=lambda i: priority_rank.get(i.get('priority', ''), 99))
+            lines = [f"### 🎯 {title}"]
+            for issue in sorted_tasks[:5]:
+                issue_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/browse/{issue['key']}"
+                priority = issue.get('priority') or ''
+                priority_str = f", 우선순위 : {priority}" if priority else ""
+                lines.append(f"- [[{issue['key']}]]({issue_url}) {issue['summary']} ({issue['status']}{priority_str})")
+            remaining = len(task_list) - 5
+            if remaining > 0 and defect_url:
+                lines.append(f"- [나머지 {remaining}건 Jira에서 보기]({defect_url})")
+            elif remaining > 0:
+                lines.append(f"... 외 {remaining}개")
+            return "\n".join(lines)
+
         sections = []
         if sqa_tasks:
-            sections.append(format_list(sqa_tasks, "주요 SQA 작업"))
+            sections.append(format_sqa_list(sqa_tasks, "주요 QA 작업"))
         if general_tasks:
-            sections.append(format_list(general_tasks, "기타 업무 및 작업"))
+            sections.append(format_general_list(general_tasks, "프로젝트 결함 관리"))
 
         return "\n\n".join(sections)
 
@@ -149,7 +168,11 @@ class MorGenerator:
 
         summary = []
         for page in pages[:10]:  # 최대 10개 요약
-            summary.append(f"- [{page['title']}]({page['url']}) ({page['space']}) - {page.get('lastModified', page.get('created', 'N/A'))}")
+            space = page['space']
+            space_str = f" ({space})" if space else ""
+            date = page.get('lastModified') or page.get('created') or ''
+            date_str = f" - {date}" if date else ""
+            summary.append(f"- [{page['title']}]({page['url']}){space_str}{date_str}")
 
         if len(pages) > 10:
             summary.append(f"... 외 {len(pages) - 10}개")

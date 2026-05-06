@@ -98,7 +98,7 @@ class JiraClient:
         )
         try:
             issues = self.jira.search_issues(jql, maxResults=0,
-                                             fields='key,summary,status,priority,components,created,resolutiondate,comment')
+                                             fields='key,summary,status,priority,components,created,resolutiondate,comment,assignee')
             result = []
             for issue in issues:
                 comments = []
@@ -111,6 +111,7 @@ class JiraClient:
                     'summary': issue.fields.summary,
                     'status': issue.fields.status.name,
                     'priority': issue.fields.priority.name if issue.fields.priority else 'None',
+                    'assignee': issue.fields.assignee.displayName if issue.fields.assignee else None,
                     'components': [comp.name for comp in getattr(issue.fields, 'components', [])],
                     'created': str(issue.fields.created)[:10],
                     'resolutiondate': str(issue.fields.resolutiondate)[:10] if issue.fields.resolutiondate else None,
