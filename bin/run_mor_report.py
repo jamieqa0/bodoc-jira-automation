@@ -22,7 +22,7 @@ from core.generators.mor_report_generator import MorGenerator
 from config.settings import settings
 
 
-def publish_to_confluence(confluence_client, content, user_email, year_month, quiet=False):
+def publish_to_confluence(confluence_client, content, user_email, year_month, display_name, quiet=False):
     """콘플루언스에 게시하는 공통 로직"""
     import markdown
     from jinja2 import Environment, FileSystemLoader
@@ -36,11 +36,13 @@ def publish_to_confluence(confluence_client, content, user_email, year_month, qu
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template('mor_report.html')
 
-    page_title = f"MOR 초안 - {user_email} - {year_month}"
+    # 타이틀 형식 변경: MOR 초안 2025-09 - jamie
+    page_title = f"MOR 초안 {year_month} - {display_name}"
+    
     rendered_html = template.render(
         title=page_title,
         content=html_content,
-        user=user_email,
+        user=display_name,
         month=year_month,
         generated_date=settings.get_current_date()
     )
@@ -76,6 +78,10 @@ def main():
     quiet = args.quiet
 
     confluence_client = ConfluenceClient(settings.ATLASSIAN_URL, settings.ATLASSIAN_USER, settings.ATLASSIAN_API_TOKEN)
+    
+    # 사용자 이름 조회를 위해 정보 가져오기
+    user_info = confluence_client.get_user_info(user_email)
+    display_name = user_info.get('displayName', user_email.split('@')[0])
 
     if args.draft:
         # 파일에서 읽기
@@ -89,7 +95,7 @@ def main():
     else:
         # 데이터 수집 및 생성
         jira_client = JiraClient(settings.ATLASSIAN_URL, settings.ATLASSIAN_USER, settings.ATLASSIAN_API_TOKEN)
-        if not quiet: print(f"Jira 데이터 수집 중... (사용자: {user_email}, 월: {year_month})")
+        if not quiet: print(f"Jira 데이터 수집 중... (사용자: {display_name}, 월: {year_month})")
         jira_issues = jira_client.fetch_user_issues(user_email, year_month, quiet=quiet)
 
         if not quiet: print("Confluence 데이터 수집 중...")
@@ -102,7 +108,7 @@ def main():
     if args.publish:
         if not quiet: print("Confluence에 게시 중...")
         try:
-            page_url = publish_to_confluence(confluence_client, content, user_email, year_month, quiet)
+            page_url = publish_to_confluence(confluence_client, content, user_email, year_month, display_name, quiet)
             if quiet:
                 print("SUCCESS")
             else:
