@@ -16,8 +16,14 @@ python bin/run_test_plan.py SQA-122
 # QA 결과 보고서 생성 → Confluence 게시 (차트 포함)
 python bin/run_qa_report.py SQA-119
 
+# MOR Report 초안만 로컬 파일로 생성 (mor_draft_YYYY-MM.md)
+python bin/run_mor_report.py --month 2026-04
+
 # MOR Report 생성 및 Confluence 게시 (초안)
 python bin/run_mor_report.py --month 2026-04 --publish
+
+# Jira 연결 및 설정 디버깅
+python bin/debug_jira.py
 
 # (필요시) 로컬 마크다운 파일을 읽어서 게시
 python bin/run_mor_report.py --month 2026-04 --draft mor_draft_2026-04.md --publish
@@ -34,6 +40,7 @@ python bin/run_mor_report.py --month 2026-04 --draft mor_draft_2026-04.md --publ
 | `ATLASSIAN_URL` | O | Jira/Confluence 도메인 (예: `https://bodocqa.atlassian.net`) |
 | `ATLASSIAN_USER` | O | Atlassian 계정 이메일 |
 | `ATLASSIAN_API_TOKEN` | O | Atlassian API 토큰 |
+| `JIRA_PROJECT_KEY` | - | Jira 프로젝트 키 (기본값: `APTS`) |
 | `CONFLUENCE_SPACE_KEY` | - | Confluence 공간 키 |
 | `CONFLUENCE_QA_REPORT_PARENT_ID` | - | QA Report 페이지 부모 ID |
 | `CONFLUENCE_TEST_PLAN_PARENT_ID` | - | Test Plan 페이지 부모 ID |
