@@ -20,25 +20,30 @@ class ConfluenceClient:
             raise
 
     def _find_page_id_by_cql(self, space, title):
-        """CQL로 페이지 ID를 검색합니다 (get_page_id 실패 시 fallback)."""
+        """CQL로 페이지 ID를 검색합니다. 특수문자 대비 포함 검색 후 Python에서 정확 매칭."""
+        title_stripped = title.strip()
+        # 첫 15자를 키워드로 포함 검색 (대괄호·콜론 등 CQL 특수문자 회피)
+        keyword = title_stripped[:15].replace('"', '').replace('\\', '')
         try:
-            escaped = title.replace('"', '\\"')
-            cql = f'type = page AND space = "{space}" AND title = "{escaped}"'
-            res = self.confluence.cql(cql, limit=1)
-            results = res.get('results', [])
-            if results:
-                return results[0].get('content', {}).get('id')
-        except Exception:
-            pass
+            cql = f'type = page AND space = "{space}" AND title ~ "{keyword}"'
+            res = self.confluence.cql(cql, limit=50)
+            for item in res.get('results', []):
+                content = item.get('content', {})
+                if content.get('title', '').strip() == title_stripped:
+                    return content.get('id')
+        except Exception as e:
+            logging.warning(f"CQL 페이지 검색 실패: {e}")
         return None
 
     def publish_page(self, space, title, body, parent_id=None, update=True, quiet=False):
         """Confluence에 페이지를 생성하거나 업데이트합니다."""
         try:
-            # 기존 페이지 확인 (get_page_id 실패 시 CQL로 fallback)
+            # 기존 페이지 확인: get_page_id → CQL 순으로 시도
             page_id = self.confluence.get_page_id(space, title)
+            logging.info(f"get_page_id 결과: {page_id!r} (title={title!r})")
             if not page_id:
                 page_id = self._find_page_id_by_cql(space, title)
+                logging.info(f"CQL fallback 결과: {page_id!r}")
 
             if page_id:
                 if update:
@@ -52,14 +57,12 @@ class ConfluenceClient:
                 try:
                     result = self.confluence.create_page(space, title, body, parent_id=parent_id)
                 except Exception as create_err:
-                    if 'already exists' in str(create_err).lower() or 'same title' in str(create_err).lower():
-                        # 생성 실패 시 CQL로 재탐색 후 업데이트
-                        page_id = self._find_page_id_by_cql(space, title)
-                        if page_id and update:
-                            logging.info(f"중복 감지, CQL로 찾아 업데이트: {title} ({page_id})")
-                            result = self.confluence.update_page(page_id, title, body, parent_id=parent_id)
-                        else:
-                            raise
+                    logging.warning(f"create_page 실패: {create_err}")
+                    # 생성 실패 시 CQL로 재탐색 후 업데이트 (중복 페이지 포함 모든 케이스)
+                    page_id = self._find_page_id_by_cql(space, title)
+                    if page_id and update:
+                        logging.info(f"중복 감지, CQL로 찾아 업데이트: {title} ({page_id})")
+                        result = self.confluence.update_page(page_id, title, body, parent_id=parent_id)
                     else:
                         raise
 

@@ -31,18 +31,6 @@
                     {% endif %}
                 </td>
             </tr>
-            <tr>
-                <th>개발문서 링크</th>
-                <td colspan="7">
-                    {% if dev_doc_urls %}
-                        {% for url in dev_doc_urls %}
-                        <a href="{{ url }}">{{ url }}</a>{% if not loop.last %}<br/>{% endif %}
-                        {% endfor %}
-                    {% else %}
-                    <span style="color: #DE350B;">링크 필요</span>
-                    {% endif %}
-                </td>
-            </tr>
         </tbody>
     </table>
 

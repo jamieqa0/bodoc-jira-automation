@@ -72,15 +72,30 @@ class QAReportGenerator:
             
         return charts
 
+    def _detect_env_type(self, summary):
+        """요약에서 앱/웹 환경을 감지합니다."""
+        lower = summary.lower()
+        if '보닥' in lower:
+            return 'app'
+        if '플래너웹' in lower or 'b2b' in lower:
+            return 'web'
+        # 일반 키워드 fallback
+        if any(k in lower for k in ['앱', 'app', 'ios', 'android', '모바일']):
+            return 'app'
+        return 'web'
+
     def create_report_html(self, df, status_counts, priority_counts, test_info, charts):
         """Jinja2 템플릿을 사용하여 HTML 리포트 생성"""
-        total = len(df)
         amp_mask = df['Summary'].str.contains(r'Amplitude', case=False, na=False) if not df.empty else []
-        
-        # 해결률 계산
-        resolved_statuses = ['Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료']
-        resolved_count = len(df[df['Status'].isin(resolved_statuses)]) if not df.empty else 0
-        res_rate = (resolved_count / total * 100) if total > 0 else 0
+        df_general = df[~amp_mask] if not df.empty else df
+
+        total = len(df)
+        total_general = len(df_general)
+
+        # 해결률: Amplitude 이슈는 별도 관리이므로 일반 결함 기준으로만 계산
+        resolved_statuses = ['Prod 배포완료', 'Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료']
+        resolved_count = len(df_general[df_general['Status'].isin(resolved_statuses)]) if not df_general.empty else 0
+        res_rate = (resolved_count / total_general * 100) if total_general > 0 else 0
 
         # 담당자 목록
         workers = "Unknown"
@@ -99,7 +114,10 @@ class QAReportGenerator:
             'report_title': f"{test_info.get('qa_summary')} Report",
             'project_name': test_info.get('project_name', 'Unknown'),
             'prd_url': test_info.get('prd_url') or "링크 필요",
-            'worker_str': workers,
+            'pm_str': '작성 필요',
+            'dev_str': '작성 필요',
+            'qa_str': workers,
+            'env_type': self._detect_env_type(test_info.get('qa_summary', '')),
             'jira_url': settings.ATLASSIAN_URL,
             'qa_task_key': test_info.get('qa_task'),
             'date_range': date_range,

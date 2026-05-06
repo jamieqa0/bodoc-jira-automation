@@ -1,4 +1,6 @@
 import os
+import sys
+import io
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
@@ -8,6 +10,16 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # .env 로드
 load_dotenv(ROOT_DIR / ".env")
+
+# Windows 한글 인코딩 자동 설정
+if sys.platform == 'win32':
+    # 출력 인코딩을 UTF-8로 강제 재설정
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if isinstance(sys.stderr, io.TextIOWrapper):
+        sys.stderr.reconfigure(encoding='utf-8')
+    # 터미널 코드페이지를 UTF-8로 변경 (명령어 실행 효과)
+    os.system('chcp 65001 > nul')
 
 class Settings:
     # Atlassian 공통
