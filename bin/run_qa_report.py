@@ -2,6 +2,9 @@ import os
 import sys
 import logging
 import urllib3
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from config.settings import settings
 from core.clients.confluence import ConfluenceClient
 from core.generators.qa_report_generator import QAReportGenerator
@@ -26,10 +29,11 @@ def main():
     
     page_title = f"{summary} Report"
     page = confluence.publish_page(
-        settings.CONFLUENCE_SPACE_KEY, 
-        page_title, 
-        html, 
-        settings.CONFLUENCE_QA_REPORT_PARENT_ID
+        settings.CONFLUENCE_SPACE_KEY,
+        page_title,
+        html,
+        settings.CONFLUENCE_QA_REPORT_PARENT_ID,
+        update=True
     )
     
     if page:

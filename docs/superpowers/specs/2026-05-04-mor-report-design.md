@@ -1,7 +1,7 @@
 # MOR Report 기능 설계
 
 **날짜:** 2026-05-04
-**프로젝트:** bodoc-jira-automation
+**프로젝트:** atlas-qa-reporter
 
 ## Context
 

@@ -17,8 +17,8 @@
     },
     {
       "id": 3,
-      "prompt": "바이브코딩에서 내 기여가 얼마나 되는지 측정해줘. bodoc-jira-automation 프로젝트만.",
-      "expected_output": "--project bodoc-jira-automation 필터로 세션 로그를 수집하고 활동량을 분석한다.",
+      "prompt": "바이브코딩에서 내 기여가 얼마나 되는지 측정해줘. atlas-qa-reporter 프로젝트만.",
+      "expected_output": "--project atlas-qa-reporter 필터로 세션 로그를 수집하고 활동량을 분석한다.",
       "should_trigger": true,
       "files": []
     },

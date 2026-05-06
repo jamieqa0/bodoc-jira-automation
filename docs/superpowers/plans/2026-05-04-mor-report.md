@@ -596,9 +596,9 @@ git commit -m "feat: add publish_mor.py to post MOR draft to Confluence"
 **Files:**
 - Modify: `CLAUDE.md` (프로젝트 루트 또는 전역)
 
-- [ ] **Step 1: bodoc-jira-automation 섹션에 MOR 명령 추가**
+- [ ] **Step 1: atlas-qa-reporter 섹션에 MOR 명령 추가**
 
-전역 `CLAUDE.md`의 `bodoc-jira-automation` 섹션 명령 목록에 추가한다:
+전역 `CLAUDE.md`의 `atlas-qa-reporter` 섹션 명령 목록에 추가한다:
 
 ```bash
 # MOR 초안 생성

@@ -25,6 +25,7 @@ class TestPlanGenerator:
             'key': task_info['key'],
             'today': get_today_str(),
             'prd_url': task_info.get('prd_url') or "링크 필요",
+            'dev_doc_urls': task_info.get('dev_doc_urls') or [],
             'jira_url': settings.ATLASSIAN_URL
         }
         return template.render(render_data)

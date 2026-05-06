@@ -19,12 +19,27 @@ class ConfluenceClient:
             logging.error(f"Confluence 연결 실패: {e}")
             raise
 
+    def _find_page_id_by_cql(self, space, title):
+        """CQL로 페이지 ID를 검색합니다 (get_page_id 실패 시 fallback)."""
+        try:
+            escaped = title.replace('"', '\\"')
+            cql = f'type = page AND space = "{space}" AND title = "{escaped}"'
+            res = self.confluence.cql(cql, limit=1)
+            results = res.get('results', [])
+            if results:
+                return results[0].get('content', {}).get('id')
+        except Exception:
+            pass
+        return None
+
     def publish_page(self, space, title, body, parent_id=None, update=True, quiet=False):
         """Confluence에 페이지를 생성하거나 업데이트합니다."""
         try:
-            # 기존 페이지 확인
+            # 기존 페이지 확인 (get_page_id 실패 시 CQL로 fallback)
             page_id = self.confluence.get_page_id(space, title)
-            
+            if not page_id:
+                page_id = self._find_page_id_by_cql(space, title)
+
             if page_id:
                 if update:
                     logging.info(f"기존 페이지 업데이트: {title} ({page_id})")
@@ -34,7 +49,19 @@ class ConfluenceClient:
                     return {"id": page_id}
             else:
                 logging.info(f"새 페이지 생성: {title}")
-                result = self.confluence.create_page(space, title, body, parent_id=parent_id)
+                try:
+                    result = self.confluence.create_page(space, title, body, parent_id=parent_id)
+                except Exception as create_err:
+                    if 'already exists' in str(create_err).lower() or 'same title' in str(create_err).lower():
+                        # 생성 실패 시 CQL로 재탐색 후 업데이트
+                        page_id = self._find_page_id_by_cql(space, title)
+                        if page_id and update:
+                            logging.info(f"중복 감지, CQL로 찾아 업데이트: {title} ({page_id})")
+                            result = self.confluence.update_page(page_id, title, body, parent_id=parent_id)
+                        else:
+                            raise
+                    else:
+                        raise
 
             # 반환값 정규화: 항상 dict with 'id' 키를 보장
             if isinstance(result, dict) and 'id' in result:

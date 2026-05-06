@@ -23,16 +23,29 @@ class JiraClient:
         try:
             issue = self.jira.issue(issue_key)
             
-            # PRD 링크 찾기 시도 (링크된 이슈 중 'PRD' 관련이 있거나 특정 필드 확인)
+            # PRD / 개발문서 링크 추출
             prd_url = ""
+            dev_doc_urls = []
             for link in getattr(issue.fields, 'issuelinks', []):
-                if hasattr(link, 'outwardIssue'):
-                    if 'PRD' in link.outwardIssue.fields.summary.upper():
-                        prd_url = f"{self.url}/browse/{link.outwardIssue.key}"
-                elif hasattr(link, 'inwardIssue'):
-                    if 'PRD' in link.inwardIssue.fields.summary.upper():
-                        prd_url = f"{self.url}/browse/{link.inwardIssue.key}"
-            
+                for attr in ('outwardIssue', 'inwardIssue'):
+                    linked = getattr(link, attr, None)
+                    if linked:
+                        summary_upper = linked.fields.summary.upper()
+                        target_url = f"{self.url}/browse/{linked.key}"
+                        if 'PRD' in summary_upper:
+                            prd_url = target_url
+                        else:
+                            dev_doc_urls.append(target_url)
+
+            # remote link(웹 링크)에서 개발문서 추가 수집
+            try:
+                for rl in self.jira.remote_links(issue.key):
+                    url = getattr(rl.object, 'url', '')
+                    if url and url not in dev_doc_urls and url != prd_url:
+                        dev_doc_urls.append(url)
+            except Exception:
+                pass
+
             return {
                 'key': issue.key,
                 'summary': issue.fields.summary,
@@ -40,6 +53,7 @@ class JiraClient:
                 'status': issue.fields.status.name,
                 'project_name': issue.fields.project.name,
                 'prd_url': prd_url,
+                'dev_doc_urls': dev_doc_urls,
                 'id': issue.id
             }
         except Exception as e:

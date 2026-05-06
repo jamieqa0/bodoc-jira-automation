@@ -1,27 +1,38 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\" -Recurse -Force)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Jamie-I\\\\Documents\\\\atlas-qa-reporter\" -Recurse -Force)",
       "Bash(Select-Object FullName, PSIsContainer)",
       "Bash(Sort-Object FullName)",
       "Bash(Format-Table -AutoSize)",
       "Skill(skillers-suda:skillers-suda)",
       "Skill(skillers-suda:skillers-suda:*)",
       "PowerShell(head -50)",
-      "Bash(python \"c:/Users/Jamie-I/Documents/bodoc-jira-automation/skills/qa-session-kpi/scripts/collect_sessions.py\" --days 7)",
+      "Bash(python \"c:/Users/Jamie-I/Documents/atlas-qa-reporter/skills/qa-session-kpi/scripts/collect_sessions.py\" --days 7)",
       "Bash(python -c ' *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "WebSearch",
       "Bash(pip install *)",
       "Bash(python -c \"import anthropic, markdown; print\\('OK'\\)\")",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\" -Recurse -Force | Where-Object {$_.FullName -notmatch '\\\\.git'} | Select-Object FullName | Sort-Object FullName)",
-      "PowerShell(Select-String -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\\\\mor_draft_2026-04.md\" -Pattern \"Confluence|페이지\" | Select-Object -First 20 | ForEach-Object { $_.Line })",
-      "PowerShell(Select-String -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\\\\mor_draft_2026-04.md\" -Pattern \"Confluence\" | Select-Object -First 3 | ForEach-Object { $_.Line })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\atlas-qa-reporter\" -Recurse -Force | Where-Object {$_.FullName -notmatch '\\\\.git'} | Select-Object FullName | Sort-Object FullName)",
+      "PowerShell(Select-String -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\atlas-qa-reporter\\\\mor_draft_2026-04.md\" -Pattern \"Confluence|페이지\" | Select-Object -First 20 | ForEach-Object { $_.Line })",
+      "PowerShell(Select-String -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\atlas-qa-reporter\\\\mor_draft_2026-04.md\" -Pattern \"Confluence\" | Select-Object -First 3 | ForEach-Object { $_.Line })",
       "PowerShell(Set-Content *)",
       "PowerShell(Get-Content *)",
       "Bash(python skills/qa-session-kpi/scripts/collect_sessions.py --days 14)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Read(//mnt/c/Users/Jamie-I/Documents/**)",
+      "Bash(python3 -c ' *)",
+      "PowerShell(cd \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\atlas-qa-reporter\"; $env:PYTHONIOENCODING=\"utf-8\"; python fetch_issue.py)",
+      "WebFetch(domain:bodocqa.atlassian.net)",
+      "PowerShell(cd \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\atlas-qa-reporter\"; $env:PYTHONIOENCODING=\"utf-8\"; python bin/run_test_plan.py SQA-131 2>&1)",
+      "PowerShell(Rename-Item -Path \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\" -NewName \"atlas-qa-reporter\" -Confirm:$false)",
+      "PowerShell(if \\($?\\) { \"rename ����\" } else { \"rename ����\" })",
+      "Bash(cmd /c ren \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\" \"atlas-qa-reporter\")",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\\" | Where-Object { $_.Name -match \"atlas|bodoc-jira\" } | Select-Object Name)",
+      "Bash(git config *)",
+      "Bash(git remote *)"
     ]
   }
 }
