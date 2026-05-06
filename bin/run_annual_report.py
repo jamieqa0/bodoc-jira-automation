@@ -24,6 +24,8 @@ warnings.filterwarnings('ignore', message='.*Unverified HTTPS request.*')
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.generators.annual_report_generator import AnnualGenerator
+from core.clients.jira import JiraClient
+from core.clients.confluence import ConfluenceClient
 from config.settings import settings
 
 RESOLVED_STATUSES = {
@@ -116,7 +118,7 @@ def main():
             'id':           c.get('id', ''),
             'title':        c.get('title', ''),
             'space':        {'key': c.get('space', {}).get('key', ''), 'name': c.get('space', {}).get('name', '')},
-            'url':          f"{base_url}{c.get('_links', {}).get('webui', '')}",
+            'url':          f"{base_url}/wiki{c.get('_links', {}).get('webui', '')}",
             'created':      hist.get('createdDate', '')[:10],
             'lastModified': last_mod.get('when', '')[:10] if isinstance(last_mod, dict) else '',
         })
@@ -149,10 +151,6 @@ def main():
     else:
         print("ERROR: 게시 실패")
         sys.exit(1)
-
-if __name__ == '__main__':
-    main()
-
 
 if __name__ == '__main__':
     main()

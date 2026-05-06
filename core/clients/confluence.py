@@ -136,7 +136,7 @@ class ConfluenceClient:
                     'space': c.get('space', {}).get('name', ''),
                     'created': hist.get('createdDate', '')[:10],
                     'lastModified': last_mod.get('when', '')[:10] if isinstance(last_mod, dict) else '',
-                    'url': f"{self.url}{c.get('_links', {}).get('webui', '')}",
+                    'url': f"{self.url}/wiki{c.get('_links', {}).get('webui', '')}",
                     'excerpt': excerpt
                 })
 
