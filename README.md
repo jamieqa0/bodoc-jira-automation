@@ -4,19 +4,21 @@
 
 ## 📂 파일 구조
 
-```
-jira-qa-automation/
-├── bin/                        # 실행 스크립트 (User Interface)
-│   ├── run_test_plan.py        # 테스트 플랜 생성 스크립트
-│   ├── run_qa_report.py        # QA 결과 보고서 생성 스크립트 (Amplitude 대응)
-│   └── debug_jira.py           # Jira 연결 디버깅 스크립트
-│
-├── core/                       # 핵심 로직 (Library)
-│   ├── clients/                # API 통신 클라이언트 (Jira, Confluence)
-│   ├── templates/              # HTML 리포트 템플릿 (Jinja2)
-│   └── utils.py                # 공통 유틸리티 (날짜 형식, 텍스트 추출 등)
-│
+```text
+.
+├── bin/                        # 실행 진입점 스크립트
+│   ├── run_test_plan.py        # 테스트 플랜 생성 및 게시
+│   ├── run_qa_report.py        # QA 결과 보고서 생성 (차트 포함)
+│   ├── run_mor_report.py       # MOR 리포트 초안 생성 및 게시
+│   ├── run_annual_report.py    # 연간 업무 성과 보고서 생성
+│   └── debug_jira.py           # 연결 디버깅 도구
+├── core/                       # 핵심 라이브러리
+│   ├── clients/                # API 클라이언트 (Jira, Confluence)
+│   ├── generators/             # 리포트 생성 엔진 (Annual, MOR, QA, Test Plan)
+│   ├── templates/              # Jinja2 HTML 템플릿
+│   └── utils.py                # 공통 유틸리티
 ├── config/                     # 설정 관리 (.env 연동)
+├── data/                       # 로컬 데이터 저장소
 ├── requirements.txt            # 의존성 패키지
 └── README.md
 ```
@@ -47,6 +49,26 @@ python bin/run_test_plan.py SQA-122
 python bin/run_qa_report.py SQA-119
 ```
 
+### 3. MOR 리포트 초안 생성 및 게시
+
+```bash
+# 초안 생성 및 Confluence 게시
+python bin/run_mor_report.py --month 2026-04 --publish
+
+# 특정 사용자 리포트 생성 시
+python bin/run_mor_report.py --month 2026-04 --user user@example.com --publish
+```
+
+### 4. 연간 업무 성과 보고서 생성
+
+```bash
+# 특정 연도의 보고서 생성 및 게시
+python bin/run_annual_report.py --year 2025
+
+# 특정 사용자 리포트 생성 시
+python bin/run_annual_report.py --year 2025 --user user@example.com
+```
+
 ## 💡 주요 특징 (QA Report)
 
 - **Amplitude 이슈 분리**: 요약에 `[Amplitude]`가 포함된 이슈를 감지하여 별도 통계 및 섹션으로 관리합니다.
@@ -57,4 +79,4 @@ python bin/run_qa_report.py SQA-119
 
 ## 💡 아틀라시안 토큰 발급 주소
 
-https://id.atlassian.com/manage-profile/security/api-tokens
+- [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)

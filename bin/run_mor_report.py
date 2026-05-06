@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.clients.jira import JiraClient
 from core.clients.confluence import ConfluenceClient
-from core.mor_generator import MorGenerator
+from core.generators.mor_report_generator import MorGenerator
 from config.settings import settings
 
 
@@ -34,7 +34,7 @@ def publish_to_confluence(confluence_client, content, user_email, year_month, qu
     # Confluence 템플릿 적용
     template_dir = os.path.join(os.path.dirname(__file__), '..', 'core', 'templates')
     env = Environment(loader=FileSystemLoader(template_dir))
-    template = env.get_template('mor_template.html')
+    template = env.get_template('mor_report.html')
 
     page_title = f"MOR 초안 - {user_email} - {year_month}"
     rendered_html = template.render(
