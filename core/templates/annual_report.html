@@ -26,19 +26,18 @@
             <tbody>
                 <tr><th>담당자</th><td>{{ display_name }} ({{ user_email }})</td></tr>
                 <tr><th>대상 기간</th><td>{{ start_date }} ~ {{ end_date }}</td></tr>
-                <tr><th>작업관리 이슈 (SQA)</th><td><a href="{{ sqa_all_url }}">{{ sqa_count }}개</a></td></tr>
-                <tr><th>결함 이슈 (타 프로젝트)</th><td><a href="{{ defect_all_url }}">{{ defect_count }}개</a></td></tr>
-                <tr><th>Confluence 페이지 작성/수정</th><td>{{ page_count }}개</td></tr>
+                <tr><th>QA 작업관리 (SQA)</th><td><a href="{{ sqa_all_url }}">{{ sqa_count }}개</a></td></tr>
+                <tr><th>프로젝트 결함 검출 수 </th><td><a href="{{ defect_all_url }}">{{ defect_count }}개</a></td></tr>
+                <tr><th>Confluence 페이지 기여</th><td>{{ page_count }}개</td></tr>
             </tbody>
         </table>
 
-        <h2>작업관리 (SQA 프로젝트)</h2>
+        <h2>QA 작업관리 (SQA)</h2>
         <div class="summary-box">
             <table>
                 <tbody>
                     <tr><th>총 이슈</th><td><a href="{{ sqa_all_url }}">{{ sqa_count }}개</a></td></tr>
                     <tr><th>완료</th><td>{{ sqa_resolved }}개 ({{ sqa_rate | round(0) | int }}%)</td></tr>
-                    <tr><th>가장 바쁜 달</th><td>{{ sqa_peak_label }} ({{ sqa_peak_count }}개)</td></tr>
                 </tbody>
             </table>
         </div>
@@ -73,7 +72,7 @@
             </tbody>
         </table>
 
-        <h2>결함 (타 프로젝트)</h2>
+        <h2>프로젝트 결함 검출</h2>
         <div class="summary-box">
             <table>
                 <tbody>
@@ -142,7 +141,7 @@
         <h2>{{ summary_title }}</h2>
         <p>{{ period_desc }} <strong>작업관리(SQA) {{ sqa_count }}개</strong>와 <strong>결함 {{ defect_count }}개</strong>, 총 {{ sqa_count + defect_count }}개의 이슈를 처리했습니다.</p>
         <p>작업관리에서는 {{ sqa_count }}건 중 {{ sqa_resolved }}건({{ sqa_rate | round(0) | int }}%)을 완료했으며, {{ sqa_peak_label }}에 가장 많은 작업({{ sqa_peak_count }}건)이 집중되었습니다.</p>
-        <p>결함 영역에서는 {{ proj_summary }} 등에서 총 {{ defect_count }}건을 발굴·추적하여 {{ defect_rate | round(0) | int }}%의 해결률을 기록했습니다. High 이상 우선순위 {{ high_prio_count }}건, Amplitude 관련 {{ amplitude_count }}건을 별도 관리했습니다.</p>
+        <p>결함 영역에서는 {{ proj_summary }} 등에서 총 {{ defect_count }}건을 발굴·추적하여 {{ defect_rate | round(0) | int }}%의 해결률을 기록했습니다. 특히 High 이상 우선순위 이슈 {{ high_prio_count }}건, Amplitude 관련 이슈 {{ amplitude_count }}건(전체 결함의 {{ amplitude_ratio | round(1) }}%)을 집중적으로 관리했습니다.</p>
         <p>Confluence에 {{ page_count }}개의 문서를 작성/수정했습니다.</p>
     </div>
 </body>

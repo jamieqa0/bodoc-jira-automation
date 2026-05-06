@@ -35,11 +35,17 @@ class MorGenerator:
         jira_summary = self._summarize_jira_issues(jira_issues)
         confluence_summary = self._summarize_confluence_pages(confluence_pages)
 
-        # 기본 통계 계산
-        total_issues = len(jira_issues)
+        # 세부 통계 계산
+        sqa_tasks = [i for i in jira_issues if i['key'].startswith('SQA-')]
+        defect_issues = [i for i in jira_issues if not i['key'].startswith('SQA-')]
+        
+        sqa_count = len(sqa_tasks)
+        defect_count = len(defect_issues)
+        
         resolved_statuses_list = ['Resolved', 'Closed', 'Done', 'Verified', '해결됨', '완료', '종료', 'Prod 배포완료']
         resolved_issues = len([i for i in jira_issues if i.get('status') in resolved_statuses_list])
         total_pages = len(confluence_pages)
+        total_issues = len(jira_issues)
         resolution_rate = (resolved_issues / total_issues * 100) if total_issues > 0 else 0
 
         # JQL 링크 생성
@@ -50,18 +56,23 @@ class MorGenerator:
         start_date = f"{year_month}-01"
         end_date = f"{year_month}-{last_day:02d}"
 
-        # 전체 이슈 링크 (담당자 OR 보고자 OR SQA 프로젝트)
-        all_issues_jql = f"((assignee = \"{user_email}\" OR reporter = \"{user_email}\") OR project = \"SQA\") AND created >= \"{start_date}\" AND created <= \"{end_date}\""
-        all_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(all_issues_jql)}"
+        # JQL 링크 (SQA / 결함 분리)
+        sqa_jql = f'project = "SQA" AND created >= "{start_date}" AND created <= "{end_date}"'
+        defect_jql = f'(assignee = "{user_email}" OR reporter = "{user_email}") AND project != "SQA" AND created >= "{start_date}" AND created <= "{end_date}"'
+        all_jql = f'((assignee = "{user_email}" OR reporter = "{user_email}") OR project = "SQA") AND created >= "{start_date}" AND created <= "{end_date}"'
+        
+        sqa_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(sqa_jql)}"
+        defect_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(defect_jql)}"
+        all_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(all_jql)}"
 
-        # 해결된 이슈 링크 (담당자 OR 보고자 OR SQA 프로젝트)
-        resolved_jql = f"((assignee = \"{user_email}\" OR reporter = \"{user_email}\") OR project = \"SQA\") AND created >= \"{start_date}\" AND created <= \"{end_date}\" AND status in ({', '.join(f'\"{s}\"' for s in resolved_statuses_list)})"
+        # 해결된 이슈 링크
+        resolved_jql = f"({all_jql}) AND status in ({', '.join(f'\"{s}\"' for s in resolved_statuses_list)})"
         resolved_issues_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(resolved_jql)}"
 
         # 템플릿 기반 MOR 내용 생성
         mor_content = f"""## 📊 1. 주요 업무 성과 요약
 
-{year_month}월 한 달간 총 **[{total_issues}건]({all_issues_url})**의 Jira 이슈를 처리하였으며, 그 중 **[{resolved_issues}건]({resolved_issues_url})**을 완료하였습니다. (해결률: **{resolution_rate:.1f}%**) 또한, **{total_pages}건**의 Confluence 문서를 작성 및 업데이트하여 팀 내 지식 공유에 기여하였습니다.
+{year_month}월 한 달간 **QA 작업관리(SQA) [{sqa_count}건]({sqa_url})** 및 **프로젝트 결함 검출 [{defect_count}건]({defect_url})**을 포함하여 총 **[{total_issues}건]({all_issues_url})**의 Jira 이슈를 처리했습니다. 그 중 **[{resolved_issues}건]({resolved_issues_url})**을 완료하여 **{resolution_rate:.1f}%**의 해결률을 기록하였으며, **{total_pages}건**의 Confluence 문서를 기여했습니다.
 
 {jira_summary}
 

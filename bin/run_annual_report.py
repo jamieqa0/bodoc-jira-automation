@@ -77,18 +77,45 @@ def main():
     )
     raw = jira.jira.search_issues(
         jql_all, maxResults=0,
-        fields='key,summary,status,issuetype,priority,created,resolutiondate,project'
+        fields='key,summary,status,issuetype,priority,created,resolutiondate,project,fixVersions'
     )
 
     sqa_issues, defect_issues = [], []
     for iss in raw:
+        # 프로젝트 명 세분화 및 통합 (최종 2개 카테고리: Bodoc 4.0, Planner & B2B)
+        raw_project_name = iss.fields.project.name
+        project_key = iss.fields.project.key
+        
+        if project_key == 'APTS':
+            # Product Team Sprint (APTS)는 키워드/버전으로 분류
+            versions = [v.name.lower() for v in getattr(iss.fields, 'fixVersions', [])]
+            version_str = " ".join(versions)
+            summary_lower = iss.fields.summary.lower()
+            
+            if '플래너' in version_str or 'planner' in version_str or '플래너' in summary_lower or 'planner' in summary_lower:
+                project_name = "Planner & B2B"
+            elif '보닥' in version_str or 'bodoc' in version_str or '보닥' in summary_lower or 'bodoc' in summary_lower:
+                project_name = "Bodoc 4.0"
+            else:
+                project_name = "Planner & B2B" # 기타 항목은 Planner & B2B로 통합
+        elif project_key == 'BODOCRUN':
+            project_name = "Bodoc 4.0"
+        elif project_key in ('PLN3', 'BDPLNPD'):
+            project_name = "Planner & B2B"
+        else:
+            # 그 외 프로젝트들 처리 (필요시 추가)
+            if '보닥' in raw_project_name or 'Bodoc' in raw_project_name:
+                project_name = "Bodoc 4.0"
+            else:
+                project_name = "Planner & B2B"
+
         d = {
             'key':          iss.key,
             'summary':      iss.fields.summary,
             'status':       iss.fields.status.name,
             'issuetype':    iss.fields.issuetype.name,
             'priority':     iss.fields.priority.name if iss.fields.priority else 'None',
-            'project_name': iss.fields.project.name,
+            'project_name': project_name,
             'month':        str(iss.fields.created)[:7],
             'resolved':     is_resolved(iss),
         }
@@ -110,17 +137,16 @@ def main():
         f'ORDER BY lastModified DESC'
     )
     pages = []
-    for p in conf.confluence.cql(cql, limit=100).get('results', []):
+    for p in conf.confluence.cql(cql, limit=100, expand='content.history').get('results', []):
         c = p.get('content', {})
         hist = c.get('history', {})
-        last_mod = hist.get('lastModified', {})
         pages.append({
             'id':           c.get('id', ''),
             'title':        c.get('title', ''),
-            'space':        {'key': c.get('space', {}).get('key', ''), 'name': c.get('space', {}).get('name', '')},
+            'space':        c.get('space', {}).get('name', ''),
             'url':          f"{base_url}/wiki{c.get('_links', {}).get('webui', '')}",
             'created':      hist.get('createdDate', '')[:10],
-            'lastModified': last_mod.get('when', '')[:10] if isinstance(last_mod, dict) else '',
+            'lastModified': hist.get('lastUpdated', {}).get('when', '')[:10] if isinstance(hist.get('lastUpdated'), dict) else '',
         })
     if not quiet:
         print(f"  Confluence 페이지: {len(pages)}개")

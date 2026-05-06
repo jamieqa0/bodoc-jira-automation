@@ -110,8 +110,8 @@ class ConfluenceClient:
         )
 
         try:
-            # Confluence CQL 검색
-            response = self.confluence.cql(cql, limit=50)  # 최대 50개
+            # Confluence CQL 검색 (content.history 확장 포함하여 날짜 정보 가져옴)
+            response = self.confluence.cql(cql, limit=100, expand='content.history')
             pages = response.get('results', [])
 
             result = []
@@ -135,7 +135,7 @@ class ConfluenceClient:
                     'title': c.get('title', ''),
                     'space': c.get('space', {}).get('name', ''),
                     'created': hist.get('createdDate', '')[:10],
-                    'lastModified': last_mod.get('when', '')[:10] if isinstance(last_mod, dict) else '',
+                    'lastModified': hist.get('lastUpdated', {}).get('when', '')[:10] if isinstance(hist.get('lastUpdated'), dict) else '',
                     'url': f"{self.url}/wiki{c.get('_links', {}).get('webui', '')}",
                     'excerpt': excerpt
                 })

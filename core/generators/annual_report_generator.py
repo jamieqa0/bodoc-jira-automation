@@ -71,6 +71,28 @@ class AnnualGenerator:
         # 월 목록 생성 (데이터가 있는 달만)
         sorted_months = sorted(set(list(sqa_monthly_counts.keys()) + list(def_monthly_counts.keys())))
 
+        # 비율 계산
+        total_defects = len(defect_issues)
+        defect_project_ratios = [
+            (p, c, (c / total_defects * 100)) 
+            for p, c in def_project_counts.most_common()
+        ] if total_defects > 0 else []
+        amplitude_ratio = (amplitude_count / total_defects * 100) if total_defects > 0 else 0
+
+        # 카테고리별 이슈 키 그룹화
+        cat_keys = {}
+        for iss in defect_issues:
+            cat = iss['project_name']
+            if cat not in cat_keys:
+                cat_keys[cat] = []
+            cat_keys[cat].append(iss['key'])
+
+        def get_cat_jql(cat_name):
+            keys = cat_keys.get(cat_name, [])
+            if not keys:
+                return "key is EMPTY"
+            return f"key in ({', '.join(keys)})"
+
         context = {
             'title': title,
             'display_name': display_name,
@@ -94,17 +116,19 @@ class AnnualGenerator:
             'high_prio_count': high_prio_count,
             'high_prio_url': self._jql_url(f'{JQL_DEF} AND priority in (Highest, High)'),
             'amplitude_count': amplitude_count,
+            'amplitude_ratio': amplitude_ratio,
             'amplitude_url': self._jql_url(f'{JQL_DEF} AND summary ~ "Amplitude"'),
             'defect_peak_label': month_label(def_peak),
             'defect_peak_count': def_monthly_counts.get(def_peak, 0),
-            'defect_projects': [(p, c, self._jql_url(f'{JQL_DEF} AND project = "{p}"')) for p, c in def_project_counts.most_common()],
+            'defect_projects': [(p, c, self._jql_url(get_cat_jql(p))) for p, c in def_project_counts.most_common()],
+            'defect_project_ratios': defect_project_ratios,
             'defect_priorities': [(p, def_priority_counts[p], self._jql_url(f'{JQL_DEF} AND priority = "{p}"')) for p in self.PRIORITY_ORDER if p in def_priority_counts],
             'defect_statuses': [(s, c, self._jql_url(f'{JQL_DEF} AND status = "{s}"')) for s, c in def_status_counts.most_common()],
             'defect_monthly': [(month_label(m), c, self._jql_url(f'{JQL_DEF} AND created >= "{m}-01" AND created <= "{m}-31"')) for m, c in sorted(def_monthly_counts.items())],
             'pages': pages,
             'summary_title': summary_title,
             'period_desc': period_desc,
-            'proj_summary': ", ".join(f"{p}({c}건)" for p, c in def_project_counts.most_common()),
+            'proj_summary': ", ".join(f"{p}({c}건, {c/total_defects*100:.1f}%)" for p, c in def_project_counts.most_common()) if total_defects > 0 else "없음",
         }
 
         return title, self.template.render(context)
