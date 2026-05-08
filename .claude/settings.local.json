@@ -35,7 +35,8 @@
       "Bash(git remote *)",
       "WebFetch(domain:developer.atlassian.com)",
       "WebFetch(domain:community.atlassian.com)",
-      "WebFetch(domain:dac-static.atlassian.com)"
+      "WebFetch(domain:dac-static.atlassian.com)",
+      "Skill(show-me-the-prd:show-me-the-prd)"
     ]
   }
 }
