@@ -125,3 +125,179 @@ body {
 .btn-primary:hover {
   background: #357abd;
 }
+
+/* ===== Site Header ===== */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+.site-header__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-header__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.site-header__title:hover {
+  color: #4a90e2;
+}
+
+.site-nav__link {
+  font-size: 0.875rem;
+  color: #555;
+  text-decoration: none;
+}
+
+.site-nav__link:hover {
+  color: #4a90e2;
+  text-decoration: underline;
+}
+
+/* ===== Main Wrapper ===== */
+.main-wrapper {
+  padding: 32px 0;
+}
+
+/* ===== Tab Navigation ===== */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 0;
+}
+
+.tab-btn {
+  padding: 9px 18px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover {
+  color: #1a1a1a;
+  background: #f0f0f0;
+}
+
+.tab-btn.active {
+  color: #4a90e2;
+  border-bottom-color: #4a90e2;
+  font-weight: 600;
+  background: transparent;
+}
+
+/* ===== Tab Panels ===== */
+.tab-panel {
+  display: none;
+  padding-top: 24px;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ===== Report Form ===== */
+.report-form {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 28px;
+}
+
+.form-group input[type="email"],
+.form-group input[type="number"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.form-group--checkbox {
+  margin-bottom: 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #4a90e2;
+}
+
+/* ===== Result Area ===== */
+.result-area {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.result-area:not(:empty) {
+  display: block;
+}
+
+.result-area.running {
+  display: block;
+  background: #e8f0fe;
+  color: #1a56c4;
+  border: 1px solid #b3caf5;
+}
+
+.result-area.success {
+  display: block;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.result-area.error {
+  display: block;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* ===== Log Area ===== */
+.log-area {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "Consolas", "Menlo", "Monaco", monospace;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.log-area:not(:empty) {
+  display: block;
+}

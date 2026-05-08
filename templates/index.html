@@ -1,2 +1,128 @@
 {% extends 'base.html' %}
-{% block content %}<h1>Reports</h1>{% endblock %}
+{% block title %}리포트 생성 — Atlas QA Reporter{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+
+  <div class="tab-nav" role="tablist">
+    <button class="tab-btn active" role="tab" data-tab="test-plan" aria-selected="true">테스트 플랜</button>
+    <button class="tab-btn" role="tab" data-tab="qa" aria-selected="false">QA 보고서</button>
+    <button class="tab-btn" role="tab" data-tab="mor" aria-selected="false">MOR 리포트</button>
+    <button class="tab-btn" role="tab" data-tab="annual" aria-selected="false">연간 보고서</button>
+  </div>
+
+  <!-- Tab 1: 테스트 플랜 -->
+  <div class="tab-panel active" id="panel-test-plan" role="tabpanel">
+    <form class="report-form" id="form-test-plan" data-report-type="test_plan" novalidate>
+      <div class="form-group">
+        <label for="tp-task-key">태스크 키 <span class="required">*</span></label>
+        <input type="text" id="tp-task-key" name="task_key" required placeholder="예: SQA-122">
+      </div>
+      <div class="form-group">
+        <label for="tp-user-email">실행자 이메일 <span class="required">*</span></label>
+        <input type="email" id="tp-user-email" name="user_email" required placeholder="예: user@company.com">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">실행</button>
+      </div>
+    </form>
+    <div class="result-area" id="result-test-plan"></div>
+    <div class="log-area" id="log-test-plan"></div>
+  </div>
+
+  <!-- Tab 2: QA 보고서 -->
+  <div class="tab-panel" id="panel-qa" role="tabpanel">
+    <form class="report-form" id="form-qa" data-report-type="qa" novalidate>
+      <div class="form-group">
+        <label for="qa-task-key">태스크 키 <span class="required">*</span></label>
+        <input type="text" id="qa-task-key" name="task_key" required placeholder="예: SQA-119">
+      </div>
+      <div class="form-group">
+        <label for="qa-user-email">실행자 이메일 <span class="required">*</span></label>
+        <input type="email" id="qa-user-email" name="user_email" required placeholder="예: user@company.com">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">실행</button>
+      </div>
+    </form>
+    <div class="result-area" id="result-qa"></div>
+    <div class="log-area" id="log-qa"></div>
+  </div>
+
+  <!-- Tab 3: MOR 리포트 -->
+  <div class="tab-panel" id="panel-mor" role="tabpanel">
+    <form class="report-form" id="form-mor" data-report-type="mor" novalidate>
+      <div class="form-group">
+        <label for="mor-month">대상 월 <span class="required">*</span></label>
+        <input type="text" id="mor-month" name="month" required
+               placeholder="예: 2026-04" pattern="\d{4}-\d{2}">
+      </div>
+      <div class="form-group">
+        <label for="mor-user-email">실행자 이메일 <span class="required">*</span></label>
+        <input type="email" id="mor-user-email" name="user_email" required>
+      </div>
+      <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" id="mor-publish" name="publish">
+          Confluence에 바로 게시
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">실행</button>
+      </div>
+    </form>
+    <div class="result-area" id="result-mor"></div>
+    <div class="log-area" id="log-mor"></div>
+  </div>
+
+  <!-- Tab 4: 연간 보고서 -->
+  <div class="tab-panel" id="panel-annual" role="tabpanel">
+    <form class="report-form" id="form-annual" data-report-type="annual" novalidate>
+      <div class="form-group">
+        <label for="annual-year">대상 연도 <span class="required">*</span></label>
+        <input type="number" id="annual-year" name="year" required
+               min="2020" max="2030" placeholder="예: 2025">
+      </div>
+      <div class="form-group">
+        <label for="annual-user-email">실행자 이메일 <span class="required">*</span></label>
+        <input type="email" id="annual-user-email" name="user_email" required>
+      </div>
+      <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" id="annual-quiet" name="quiet">
+          간단 출력 모드
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">실행</button>
+      </div>
+    </form>
+    <div class="result-area" id="result-annual"></div>
+    <div class="log-area" id="log-annual"></div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    var btns = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var target = btn.dataset.tab;
+
+        btns.forEach(function (b) {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        panels.forEach(function (p) { p.classList.remove('active'); });
+
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        document.getElementById('panel-' + target).classList.add('active');
+      });
+    });
+  })();
+</script>
+{% endblock %}

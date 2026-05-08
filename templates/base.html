@@ -7,7 +7,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-{% block content %}{% endblock %}
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="{{ url_for('index') }}" class="site-header__title">Atlas QA Reporter</a>
+    <nav class="site-nav">
+      <a href="{{ url_for('settings') }}" class="site-nav__link">Settings</a>
+    </nav>
+  </div>
+</header>
+<main class="main-wrapper">
+  {% block content %}{% endblock %}
+</main>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
