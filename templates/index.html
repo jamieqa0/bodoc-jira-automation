@@ -5,14 +5,14 @@
 <div class="page-wrapper">
 
   <div class="tab-nav" role="tablist">
-    <button class="tab-btn active" role="tab" data-tab="test-plan" aria-selected="true">테스트 플랜</button>
-    <button class="tab-btn" role="tab" data-tab="qa" aria-selected="false">QA 보고서</button>
-    <button class="tab-btn" role="tab" data-tab="mor" aria-selected="false">MOR 리포트</button>
-    <button class="tab-btn" role="tab" data-tab="annual" aria-selected="false">연간 보고서</button>
+    <button class="tab-btn active" data-tab="test-plan" role="tab" aria-selected="true" id="tab-test-plan" aria-controls="panel-test-plan">테스트 플랜</button>
+    <button class="tab-btn" data-tab="qa" role="tab" aria-selected="false" id="tab-qa" aria-controls="panel-qa">QA 보고서</button>
+    <button class="tab-btn" data-tab="mor" role="tab" aria-selected="false" id="tab-mor" aria-controls="panel-mor">MOR 리포트</button>
+    <button class="tab-btn" data-tab="annual" role="tab" aria-selected="false" id="tab-annual" aria-controls="panel-annual">연간 보고서</button>
   </div>
 
   <!-- Tab 1: 테스트 플랜 -->
-  <div class="tab-panel active" id="panel-test-plan" role="tabpanel">
+  <div class="tab-panel active" id="panel-test-plan" role="tabpanel" aria-labelledby="tab-test-plan">
     <form class="report-form" id="form-test-plan" data-report-type="test_plan" novalidate>
       <div class="form-group">
         <label for="tp-task-key">태스크 키 <span class="required">*</span></label>
@@ -31,7 +31,7 @@
   </div>
 
   <!-- Tab 2: QA 보고서 -->
-  <div class="tab-panel" id="panel-qa" role="tabpanel">
+  <div class="tab-panel" id="panel-qa" role="tabpanel" aria-labelledby="tab-qa">
     <form class="report-form" id="form-qa" data-report-type="qa" novalidate>
       <div class="form-group">
         <label for="qa-task-key">태스크 키 <span class="required">*</span></label>
@@ -50,7 +50,7 @@
   </div>
 
   <!-- Tab 3: MOR 리포트 -->
-  <div class="tab-panel" id="panel-mor" role="tabpanel">
+  <div class="tab-panel" id="panel-mor" role="tabpanel" aria-labelledby="tab-mor">
     <form class="report-form" id="form-mor" data-report-type="mor" novalidate>
       <div class="form-group">
         <label for="mor-month">대상 월 <span class="required">*</span></label>
@@ -76,7 +76,7 @@
   </div>
 
   <!-- Tab 4: 연간 보고서 -->
-  <div class="tab-panel" id="panel-annual" role="tabpanel">
+  <div class="tab-panel" id="panel-annual" role="tabpanel" aria-labelledby="tab-annual">
     <form class="report-form" id="form-annual" data-report-type="annual" novalidate>
       <div class="form-group">
         <label for="annual-year">대상 연도 <span class="required">*</span></label>

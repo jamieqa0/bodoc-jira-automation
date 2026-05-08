@@ -13,8 +13,8 @@ body {
 
 /* ===== Layout ===== */
 .page-wrapper {
-  max-width: 600px;
-  margin: 40px auto;
+  max-width: 800px;
+  margin: 8px auto;
   padding: 0 16px;
 }
 
@@ -133,7 +133,7 @@ body {
 }
 
 .site-header__inner {
-  max-width: 900px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 0 16px;
   height: 52px;
@@ -166,7 +166,7 @@ body {
 
 /* ===== Main Wrapper ===== */
 .main-wrapper {
-  padding: 32px 0;
+  padding: 32px 16px;
 }
 
 /* ===== Tab Navigation ===== */
