@@ -102,6 +102,10 @@ def _page_url(base_url: str, result: dict) -> str:
 
 # ── Background worker ─────────────────────────────────────────────────────────
 
+# WARNING: _patch_settings()는 module-level 전역 singleton을 수정합니다.
+# POST /run 요청이 동시에 들어오면 설정값이 서로 덮어씌워질 수 있습니다.
+# 2인 팀의 로컬 환경에서는 허용 가능하지만, 동시 실행이 필요하다면
+# generator 생성자에 credentials를 직접 전달하는 방식으로 리팩토링이 필요합니다.
 def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
     log = _make_log(job_id)
     confluence_url = None
@@ -249,10 +253,13 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
 
         # ── Annual Report ───────────────────────────────────────────────
         elif report_type == "annual":
+            from datetime import date as _date
             year_str = str(params.get("year", "")).strip()
             if not year_str:
                 raise ValueError("대상 연도가 필요합니다.")
             year = int(year_str)
+            if not (2020 <= year <= _date.today().year + 1):
+                raise ValueError(f"연도는 2020~{_date.today().year + 1} 범위여야 합니다.")
 
             user_email = params.get("user_email", user)
             today = date.today()
@@ -442,28 +449,34 @@ def stream(job_id):
                         mimetype="text/event-stream")
 
     def generate():
-        job = _jobs[job_id]
-        q = job["log_queue"]
+        try:
+            job = _jobs[job_id]
+            q = job["log_queue"]
 
-        while True:
-            try:
-                item = q.get(timeout=30)
-            except queue.Empty:
-                # Keep-alive comment to prevent proxy timeout
-                yield ": keep-alive\n\n"
-                continue
+            while True:
+                try:
+                    item = q.get(timeout=30)
+                except queue.Empty:
+                    # Keep-alive comment to prevent proxy timeout
+                    yield ": keep-alive\n\n"
+                    continue
 
-            if item is None:
-                # Sentinel received — job finished
-                if job["error"]:
-                    payload = json.dumps({"status": "error", "message": job["error"]}, ensure_ascii=False)
-                else:
-                    payload = json.dumps({"status": "success", "url": job.get("confluence_url", "")}, ensure_ascii=False)
-                yield f"event: done\ndata: {payload}\n\n"
-                break
+                if item is None:
+                    # Sentinel received — job finished
+                    if job["error"]:
+                        payload = json.dumps({"status": "error", "message": job["error"]}, ensure_ascii=False)
+                    else:
+                        payload = json.dumps({"status": "success", "url": job.get("confluence_url", "")}, ensure_ascii=False)
+                    yield f"event: done\ndata: {payload}\n\n"
+                    _jobs.pop(job_id, None)   # 완료된 job 메모리 해제
+                    break
 
-            # Regular log line
-            yield f"data: {item}\n\n"
+                # Regular log line
+                yield f"data: {item}\n\n"
+        except Exception as exc:
+            payload = json.dumps({"status": "error", "message": f"스트림 오류: {exc}"}, ensure_ascii=False)
+            yield f"event: done\ndata: {payload}\n\n"
+            _jobs.pop(job_id, None)
 
     response = Response(
         stream_with_context(generate()),
