@@ -271,7 +271,7 @@
 
   /* ─── Defect Table ─── */
   table.defect-table {
-    width: 100%;
+    width: auto;
     border-collapse: collapse;
     font-size: 12px;
   }
@@ -292,6 +292,7 @@
     padding: 7px 10px;
     border: 1px solid var(--border);
     vertical-align: top;
+    text-align: justify;
   }
   table.defect-table tbody tr:nth-child(even) td { background: #fafbfc; }
   table.defect-table td[contenteditable="true"]:focus { background: var(--accent-light); outline: none; }
@@ -634,16 +635,16 @@
 
     <!-- 결함 상세 테이블 -->
     <div style="overflow-x:auto;">
-      <table class="defect-table">
+      <table class="defect-table" data-layout="align-start">
         <thead>
           <tr>
-            <th style="width:50px">No</th>
-            <th style="width:80px">플랫폼</th>
+            <th>No</th>
+            <th>플랫폼</th>
             <th>결함 제목</th>
-            <th style="width:80px">심각도</th>
-            <th style="width:70px">상태</th>
-            <th style="width:110px">담당 개발자</th>
-            <th style="width:90px">수정 예정일</th>
+            <th>심각도</th>
+            <th>상태</th>
+            <th>담당 개발자</th>
+            <th>수정 예정일</th>
             <th>비고</th>
           </tr>
         </thead>

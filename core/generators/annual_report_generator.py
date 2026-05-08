@@ -31,8 +31,6 @@ class AnnualGenerator:
         JQL_DEF = f'(assignee = "{user_email}" OR reporter = "{user_email}") AND project != "SQA" {BASE_DATE_JQL}'
 
         # SQA 분석
-        sqa_type_counts = Counter(i['issuetype'] for i in sqa_issues)
-        sqa_status_counts = Counter(i['status'] for i in sqa_issues)
         sqa_monthly_counts = Counter(i['month'] for i in sqa_issues)
         sqa_resolved = sum(1 for i in sqa_issues if i['resolved'])
         sqa_rate = (sqa_resolved / len(sqa_issues) * 100) if sqa_issues else 0
@@ -105,9 +103,6 @@ class AnnualGenerator:
             'sqa_rate': sqa_rate,
             'sqa_peak_label': month_label(sqa_peak),
             'sqa_peak_count': sqa_monthly_counts.get(sqa_peak, 0),
-            'sqa_types': [(t, c, self._jql_url(f'{JQL_SQA} AND issuetype = "{t}"')) for t, c in sqa_type_counts.most_common()],
-            'sqa_statuses': [(s, c, self._jql_url(f'{JQL_SQA} AND status = "{s}"')) for s, c in sqa_status_counts.most_common()],
-            'sqa_monthly': [(month_label(m), c, self._jql_url(f'{JQL_SQA} AND created >= "{m}-01" AND created <= "{m}-{calendar.monthrange(int(m[:4]), int(m[5:]))[1]:02d}"')) for m, c in sorted(sqa_monthly_counts.items())],
             'defect_resolved': def_resolved,
             'defect_rate': def_rate,
             'high_prio_count': high_prio_count,

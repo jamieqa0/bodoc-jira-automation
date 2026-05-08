@@ -32,7 +32,10 @@
       "Bash(cmd /c ren \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\bodoc-jira-automation\" \"atlas-qa-reporter\")",
       "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Jamie-I\\\\Documents\\\\\" | Where-Object { $_.Name -match \"atlas|bodoc-jira\" } | Select-Object Name)",
       "Bash(git config *)",
-      "Bash(git remote *)"
+      "Bash(git remote *)",
+      "WebFetch(domain:developer.atlassian.com)",
+      "WebFetch(domain:community.atlassian.com)",
+      "WebFetch(domain:dac-static.atlassian.com)"
     ]
   }
 }

@@ -107,6 +107,25 @@ class QAReportGenerator:
 
         priority_details = f" ({', '.join([f'{p}: {c}' for p, c in priority_counts.items()])})" if priority_counts is not None else ""
 
+        jira_base = settings.ATLASSIAN_URL.rstrip('/')
+        priority_order = {'Highest': 0, 'High': 1, 'Medium': 2, 'Low': 3, 'Lowest': 4}
+        def _to_list(frame):
+            if frame.empty:
+                return []
+            rows = [
+                {
+                    'key': row['Key'],
+                    'url': f"{jira_base}/browse/{row['Key']}",
+                    'summary': row['Summary'],
+                    'status': row['Status'],
+                    'priority': row.get('Priority', 'None'),
+                }
+                for _, row in frame.iterrows()
+            ]
+            return sorted(rows, key=lambda r: priority_order.get(r['priority'], 99))
+        defect_list = _to_list(df_general)
+        amplitude_list = _to_list(df[amp_mask]) if not df.empty and any(amp_mask) else []
+
         render_data = {
             'report_title': f"{test_info.get('qa_summary')} Report",
             'project_name': test_info.get('project_name', 'Unknown'),
@@ -128,7 +147,9 @@ class QAReportGenerator:
             'defects': not df[~amp_mask].empty if not df.empty else False,
             'amplitude_defects': any(amp_mask) if not df.empty else False,
             'total_amplitude': sum(amp_mask) if not df.empty else 0,
-            'has_amplitude_chart': 'amplitude_chart.png' in charts
+            'has_amplitude_chart': 'amplitude_chart.png' in charts,
+            'defect_list': defect_list,
+            'amplitude_list': amplitude_list,
         }
         template_name = 'qa_report.html'
         return self.jinja_env.get_template(template_name).render(render_data)

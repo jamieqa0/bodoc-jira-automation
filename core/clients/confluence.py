@@ -21,6 +21,45 @@ class ConfluenceClient:
             logging.error(f"Confluence 연결 실패: {e}")
             raise
 
+    def _find_trashed_page_id(self, space, title):
+        """휴지통에 있는 페이지 ID를 검색합니다."""
+        try:
+            results = self.confluence.get(
+                "rest/api/content",
+                params={"title": title, "spaceKey": space, "type": "page", "status": "trashed"}
+            )
+            for item in (results.get('results', []) if isinstance(results, dict) else []):
+                if item.get('title', '').strip() == title.strip():
+                    return item.get('id')
+        except Exception as e:
+            logging.debug(f"휴지통 페이지 검색 실패: {e}")
+        return None
+
+    def _restore_and_update_page(self, page_id, title, body, parent_id):
+        """휴지통 페이지를 복구하면서 내용을 업데이트합니다."""
+        try:
+            version = self.confluence.history(page_id)["lastUpdated"]["number"] + 1
+            data = {
+                "id": page_id,
+                "type": "page",
+                "title": title,
+                "status": "current",
+                "version": {"number": version},
+                "metadata": {"properties": {
+                    "content-appearance-draft": {"value": "full-width"},
+                    "content-appearance-published": {"value": "full-width"},
+                }},
+                "body": {"storage": {"value": body, "representation": "storage"}},
+            }
+            if parent_id:
+                data["ancestors"] = [{"type": "page", "id": parent_id}]
+            result = self.confluence.put(f"rest/api/content/{page_id}", data=data)
+            logging.info(f"휴지통에서 복구 후 업데이트: {title} ({page_id})")
+            return result
+        except Exception as e:
+            logging.error(f"휴지통 페이지 복구 실패: {e}")
+            return None
+
     def _find_page_id_by_cql(self, space, title):
         """CQL로 페이지 ID를 검색합니다. 특수문자 대비 포함 검색 후 Python에서 정확 매칭."""
         title_stripped = title.strip()
@@ -50,23 +89,29 @@ class ConfluenceClient:
             if page_id:
                 if update:
                     logging.info(f"기존 페이지 업데이트: {title} ({page_id})")
-                    result = self.confluence.update_page(page_id, title, body, parent_id=parent_id)
+                    result = self.confluence.update_page(page_id, title, body, parent_id=parent_id, full_width=True)
                 else:
                     logging.info(f"페이지가 이미 존재하며 업데이트 모드가 아님: {title}")
                     return {"id": page_id}
             else:
                 logging.info(f"새 페이지 생성: {title}")
                 try:
-                    result = self.confluence.create_page(space, title, body, parent_id=parent_id)
+                    result = self.confluence.create_page(space, title, body, parent_id=parent_id, full_width=True)
                 except Exception as create_err:
                     logging.warning(f"create_page 실패: {create_err}")
-                    # 생성 실패 시 CQL로 재탐색 후 업데이트 (중복 페이지 포함 모든 케이스)
+                    # 1순위: 살아있는 중복 페이지 탐색
                     page_id = self._find_page_id_by_cql(space, title)
                     if page_id and update:
                         logging.info(f"중복 감지, CQL로 찾아 업데이트: {title} ({page_id})")
-                        result = self.confluence.update_page(page_id, title, body, parent_id=parent_id)
+                        result = self.confluence.update_page(page_id, title, body, parent_id=parent_id, full_width=True)
                     else:
-                        raise
+                        # 2순위: 휴지통 페이지 탐색 후 복구
+                        trashed_id = self._find_trashed_page_id(space, title)
+                        if trashed_id and update:
+                            logging.info(f"휴지통 페이지 감지, 복구 후 업데이트: {title} ({trashed_id})")
+                            result = self._restore_and_update_page(trashed_id, title, body, parent_id)
+                        else:
+                            raise
 
             # 반환값 정규화: 항상 dict with 'id' 키를 보장
             if isinstance(result, dict) and 'id' in result:
