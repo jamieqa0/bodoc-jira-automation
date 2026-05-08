@@ -4,7 +4,7 @@ from config.ui_settings_loader import load_ui_settings, save_ui_settings
 
 settings_bp = Blueprint("settings", __name__)
 
-_REQUIRED_FIELDS = ("atlassian_url", "atlassian_api_token", "confluence_space_key")
+_REQUIRED_FIELDS = ("atlassian_url", "atlassian_user", "atlassian_api_token", "confluence_space_key")
 _ALL_FIELDS = _REQUIRED_FIELDS + ("qa_report_parent_id", "mor_parent_id")
 
 
@@ -26,7 +26,12 @@ def save_settings():
         flash("필수 항목을 모두 입력해주세요.", "error")
         return render_template("settings.html", settings=data)
 
-    save_ui_settings(data)
+    try:
+        save_ui_settings(data)
+    except OSError as e:
+        flash(f"설정 저장 중 오류가 발생했습니다: {e}", "error")
+        return render_template("settings.html", settings=data)
+
     flash("설정이 저장되었습니다.", "success")
 
     if is_first_run:
