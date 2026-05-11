@@ -2,7 +2,7 @@ services:
   - type: web
     name: atlas-qa-reporter
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: apt-get install -y fonts-nanum && pip install -r requirements.txt && python -c "import matplotlib.font_manager; matplotlib.font_manager._load_fontmanager(try_read_cache=False)"
     startCommand: gunicorn --workers 1 --threads 4 --timeout 120 "app:create_app()"
     envVars:
       - key: FLASK_SECRET_KEY
