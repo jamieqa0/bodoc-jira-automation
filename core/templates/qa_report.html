@@ -1,0 +1,160 @@
+<style>td { text-align: justify; }</style>
+<div>
+    <h1>{{ report_title }}</h1>
+    <table border="1" data-layout="align-start">
+        <tbody>
+            <tr>
+                <th>QA Task</th>
+                <td><a href="{{ jira_url }}/browse/{{ qa_task_key }}">{{ qa_task_key }}</a></td>
+                <th>QA 상태</th>
+                <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">진행중</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">종료</ac:parameter></ac:structured-macro></td>
+            </tr>
+            <tr>
+                <th>PRD/기획 링크</th>
+                <td>
+                    {% if prd_url %}<div><a href="{{ prd_url }}">📋 PRD</a></div>{% endif %}
+                    {% if figma_url %}<div><a href="{{ figma_url }}">🎨 Figma</a></div>{% endif %}
+                    {% if confluence_url %}<div><a href="{{ confluence_url }}">📄 Confluence</a></div>{% endif %}
+                    {% if not prd_url and not figma_url and not confluence_url %}<span style="color: #DE350B;">링크 필요</span>{% endif %}
+                </td>
+                <th>담당자</th>
+                <td>PM : {{ pm_str }}<br/>DEV : {{ dev_str }}<br/>QA : {{ qa_str }}</td>
+            </tr>
+            <tr>
+                <th>QA 환경/버전</th>
+                <td>{% if env_type == 'app' %}Android / iOS{% else %}Web (Chrome){% endif %}{% if show_version %} | {{ version }}{% endif %}</td>
+                <th>일정</th>
+                <td>{{ date_range }}</td>
+            </tr>
+            <tr>
+                <th>총 결함 수</th>
+                <td><strong>{{ total_defects }}</strong> {{ priority_details }}</td>
+                <th>결함 해결률(%)</th>
+                <td>{{ resolution_rate }}%</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 1. 테스트 범위 및 목표 -->
+    <h2>1. 테스트 범위 및 목표</h2>
+    <ac:structured-macro ac:name="info">
+        <ac:parameter ac:name="title">작성 가이드</ac:parameter>
+        <ac:rich-text-body>
+            <ul>
+                <li><strong>범위</strong> {{ qa_summary }}</li>
+                <li>신규/수정 기능 정상 동작 검증</li>
+                <li>주요 사용자 시나리오 및 핵심 기능 검증</li>
+                <li>연관 기능 Regression 테스트 수행</li>
+                <li>결함 수정 건 재검증 및 영향도 확인</li>
+            </ul>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- 2. QA 수행 항목 -->
+    <h2>2. QA 수행 항목</h2>
+    <ul>
+        <li>TC X건 전체 통과</li>
+        <li>Medium 이상 결함 모두 해결 완료</li>
+        <li>주요 변경 기능 대상 탐색적 테스트 수행</li>
+        <li>잔여 이슈 우선순위 조정 및 후속 작업 반영 또는 영향 범위 미미하여 수정 보류 협의</li>
+    </ul>
+
+    <!-- 3. 결함 통계 -->
+    <h2>3. 결함 통계</h2>
+    {% if total_defects == 0 %}
+    <ac:structured-macro ac:name="info">
+        <ac:parameter ac:name="title">결함 없음</ac:parameter>
+        <ac:rich-text-body>
+            <p>이 프로젝트에서 발견된 결함이 없었습니다.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+    {% else %}
+    <table style="border: none;" data-layout="align-start">
+        <tbody>
+            <tr>
+                <td style="vertical-align: top; border: none; text-align: center;">
+                    <p><strong>상태별 결함</strong></p>
+                    <ac:image ac:width="450">
+                        <ri:attachment ri:filename="status_chart.png" />
+                    </ac:image>
+                </td>
+                <td style="vertical-align: top; border: none; text-align: center;">
+                    <p><strong>우선순위별 결함</strong></p>
+                    <ac:image ac:width="450">
+                        <ri:attachment ri:filename="priority_chart.png" />
+                    </ac:image>
+                </td>
+                {% if has_amplitude_chart %}
+                <td style="vertical-align: top; border: none; text-align: center;">
+                    <p><strong>Amplitude 지표 통계</strong></p>
+                    <ac:image ac:width="450">
+                        <ri:attachment ri:filename="amplitude_chart.png" />
+                    </ac:image>
+                </td>
+                {% endif %}
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if total_defects > 0 %}
+    <!-- 4. 결함 상세 내역 -->
+    <h2>4. 결함 상세 내역 (연결된 태스크: {{ qa_task_key }})</h2>
+    {% if defects %}
+    <ac:structured-macro ac:name="jira">
+        <ac:parameter ac:name="server">System Jira</ac:parameter>
+        <ac:parameter ac:name="jqlQuery">issue in linkedIssues("{{ qa_task_key }}") AND issuetype = Defect AND summary !~ "Amplitude"</ac:parameter>
+        <ac:parameter ac:name="count">true</ac:parameter>
+    </ac:structured-macro>
+    <ul>{% for issue in defect_list[:10] %}
+        <li><a href="{{ issue.url }}">[{{ issue.key }}]</a> {{ issue.summary }} ({{ issue.status }}, 우선순위: {{ issue.priority }})</li>{% endfor %}
+    </ul>
+    {% if defect_list|length > 10 %}
+    <ac:structured-macro ac:name="expand">
+        <ac:parameter ac:name="title">나머지 {{ defect_list|length - 10 }}건 더 보기</ac:parameter>
+        <ac:rich-text-body>
+            <ul>{% for issue in defect_list[10:] %}
+                <li><a href="{{ issue.url }}">[{{ issue.key }}]</a> {{ issue.summary }} ({{ issue.status }}, 우선순위: {{ issue.priority }})</li>{% endfor %}
+            </ul>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+    {% endif %}
+    {% endif %}
+
+    {% set ns = namespace(n=5) %}
+    {% if amplitude_list %}
+    <h2>{{ ns.n }}. Amplitude 지표 이슈</h2>
+    <ac:structured-macro ac:name="jira">
+        <ac:parameter ac:name="server">System Jira</ac:parameter>
+        <ac:parameter ac:name="jqlQuery">issue in linkedIssues("{{ qa_task_key }}") AND issuetype = Defect AND summary ~ "Amplitude"</ac:parameter>
+        <ac:parameter ac:name="count">true</ac:parameter>
+    </ac:structured-macro>
+    <ul>{% for issue in amplitude_list[:10] %}
+        <li><a href="{{ issue.url }}">[{{ issue.key }}]</a> {{ issue.summary }} ({{ issue.status }}, 우선순위: {{ issue.priority }})</li>{% endfor %}
+    </ul>
+    {% if amplitude_list|length > 10 %}
+    <ac:structured-macro ac:name="expand">
+        <ac:parameter ac:name="title">나머지 {{ amplitude_list|length - 10 }}건 더 보기</ac:parameter>
+        <ac:rich-text-body>
+            <ul>{% for issue in amplitude_list[10:] %}
+                <li><a href="{{ issue.url }}">[{{ issue.key }}]</a> {{ issue.summary }} ({{ issue.status }}, 우선순위: {{ issue.priority }})</li>{% endfor %}
+            </ul>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+    {% endif %}
+    {% set ns.n = ns.n + 1 %}
+    {% endif %}
+    {% endif %}
+
+    {% if total_defects == 0 %}
+      {% set ns = namespace(n=4) %}
+    {% endif %}
+
+    <h2>{{ ns.n }}. QA 요약 및 배포 권고</h2>
+    <ac:structured-macro ac:name="info">
+        <ac:parameter ac:name="title">작성 가이드</ac:parameter>
+        <ac:rich-text-body>
+            <p>최종 QA 의견 및 배포 권고 사항(예: 배포 승인 / 조건부 승인 / 배포 불가 등)을 입력해 주세요. </p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+</div>

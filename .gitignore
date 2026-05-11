@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .DS_Store
-qa_report.html
+/qa_report.html
 *.xlsx
 .venv/
 *.txt
