@@ -9,3 +9,13 @@ qa_report.html
 *.txt
 !requirements.txt
 *.png
+
+# 로컬 설정 (API 토큰 포함 — 절대 커밋 금지)
+config/ui_settings.json
+
+# Playwright 브라우저 테스트 아티팩트
+.playwright-mcp/
+**/.playwright-mcp/
+
+# Claude worktree 아티팩트
+.claude/worktrees/
