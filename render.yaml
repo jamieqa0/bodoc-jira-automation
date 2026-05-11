@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: atlas-qa-reporter
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 120 "app:create_app()"
+    envVars:
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: ATLASSIAN_URL
+        sync: false
+      - key: ATLASSIAN_USER
+        sync: false
+      - key: ATLASSIAN_API_TOKEN
+        sync: false
+      - key: CONFLUENCE_SPACE_KEY
+        sync: false
+      - key: TEST_PLAN_PARENT_ID
+        sync: false
+      - key: QA_REPORT_PARENT_ID
+        sync: false
+      - key: MOR_PARENT_ID
+        sync: false
