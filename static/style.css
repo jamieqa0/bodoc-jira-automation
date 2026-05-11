@@ -169,47 +169,35 @@ body {
   padding: 32px 16px;
 }
 
-/* ===== Tab Navigation ===== */
-.tab-nav {
+/* ===== Report Sections ===== */
+.report-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #4a90e2;
+}
+
+.form-row {
   display: flex;
-  gap: 4px;
-  border-bottom: 2px solid #ddd;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.form-row .form-group {
   margin-bottom: 0;
+  flex: 1 1 180px;
 }
 
-.tab-btn {
-  padding: 9px 18px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  font-size: 0.9rem;
-  color: #666;
-  cursor: pointer;
-  border-radius: 4px 4px 0 0;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.tab-btn:hover {
-  color: #1a1a1a;
-  background: #f0f0f0;
-}
-
-.tab-btn.active {
-  color: #4a90e2;
-  border-bottom-color: #4a90e2;
-  font-weight: 600;
-  background: transparent;
-}
-
-/* ===== Tab Panels ===== */
-.tab-panel {
-  display: none;
-  padding-top: 24px;
-}
-
-.tab-panel.active {
-  display: block;
+.form-row .form-actions {
+  flex: 0 0 auto;
+  margin-top: 0;
 }
 
 /* ===== Report Form ===== */
@@ -300,4 +288,46 @@ body {
 
 .log-area:not(:empty) {
   display: block;
+}
+
+/* ===== Notice Box ===== */
+.notice-box {
+  margin-top: 40px;
+  margin-bottom: 32px;
+  padding: 16px 20px;
+  background: #fffbeb;
+  border: 1px solid #f5e0a0;
+  border-left: 4px solid #f0b429;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.notice-box__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #7a5c00;
+  margin: 0 0 10px;
+}
+
+.notice-box__list {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.7;
+}
+
+.notice-box__list li + li {
+  margin-top: 6px;
+}
+
+/* ===== Field Validation ===== */
+.input-invalid {
+  border-color: #c0392b !important;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.2) !important;
+}
+
+.field-error {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #c0392b;
 }

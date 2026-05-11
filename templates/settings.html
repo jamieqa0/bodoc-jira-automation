@@ -68,6 +68,17 @@
     </div>
 
     <div class="form-group">
+      <label for="test_plan_parent_id">테스트 플랜 부모 페이지 ID</label>
+      <input
+        type="text"
+        id="test_plan_parent_id"
+        name="test_plan_parent_id"
+        value="{{ settings.get('test_plan_parent_id', '') }}"
+      >
+      <p class="help-text">비워두면 기본값 사용</p>
+    </div>
+
+    <div class="form-group">
       <label for="qa_report_parent_id">QA 리포트 부모 페이지 ID</label>
       <input
         type="text"

@@ -24,6 +24,9 @@ python bin/run_mor_report.py --month 2026-04 --user user@example.com --publish #
 python bin/run_annual_report.py --year 2025             # 2025년 전체
 python bin/run_annual_report.py --year 2026 --quiet     # 진행 중인 2026년 요약
 python bin/run_annual_report.py --year 2025 --user user@example.com # 특정 사용자 지정
+
+# 5. Web UI 실행
+python app.py                                           # http://localhost:5000
 ```
 
 ---

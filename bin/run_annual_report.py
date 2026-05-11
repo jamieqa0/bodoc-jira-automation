@@ -63,6 +63,20 @@ def main():
     user_info = conf.get_user_info(user_email)
     user_info['email'] = user_email
     account_id = user_info['accountId']
+    if account_id == user_email:
+        if not quiet:
+            print("  Confluence 사용자 조회 실패, Jira를 통해 accountId 재시도...")
+        jira_id = jira.get_user_account_id(user_email)
+        if jira_id:
+            account_id = jira_id
+            user_info['accountId'] = jira_id
+            if not quiet:
+                print(f"  accountId: {jira_id} [OK via Jira]")
+        else:
+            if not quiet:
+                print(f"  [경고] accountId 조회 실패 — Confluence 문서 수집이 0건일 수 있습니다.")
+    elif not quiet:
+        print(f"  accountId: {account_id} [OK]")
 
     # ── Jira 이슈 수집 ────────────────────────────────────────────
     if not quiet:

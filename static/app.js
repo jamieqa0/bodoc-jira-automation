@@ -14,11 +14,51 @@ function toIdSuffix(reportType) {
   return reportType.replace(/_/g, '-');
 }
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function clearFieldErrors(form) {
+  form.querySelectorAll('.field-error').forEach(function (el) { el.remove(); });
+  form.querySelectorAll('.input-invalid').forEach(function (el) {
+    el.classList.remove('input-invalid');
+  });
+}
+
+function showFieldError(input, message) {
+  input.classList.add('input-invalid');
+  var err = document.createElement('p');
+  err.className = 'field-error';
+  err.textContent = message;
+  input.parentNode.appendChild(err);
+}
+
+function validateForm(form) {
+  clearFieldErrors(form);
+  var valid = true;
+  var elements = form.elements;
+  for (var i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    if (!el.name || el.type === 'checkbox' || el.type === 'submit') continue;
+    var val = el.value.trim();
+    if (el.required && !val) {
+      showFieldError(el, '필수 입력 항목입니다.');
+      valid = false;
+    } else if (el.type === 'email' && val && !isValidEmail(val)) {
+      showFieldError(el, '올바른 이메일 형식이 아닙니다.');
+      valid = false;
+    }
+  }
+  return valid;
+}
+
 function handleSubmit(e) {
   e.preventDefault();
 
   var form = e.currentTarget;
   var reportType = form.dataset.reportType;
+
+  if (!validateForm(form)) return;
 
   // Collect form data
   var formData = {};

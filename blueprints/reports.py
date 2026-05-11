@@ -146,7 +146,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
                 space=space,
                 title=title,
                 body=html,
-                parent_id=ui_settings.get("qa_report_parent_id") or None,
+                parent_id=params.get("parent_id") or ui_settings.get("test_plan_parent_id") or None,
                 update=True,
             )
             if not result:
@@ -181,7 +181,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
                 space=space,
                 title=page_title,
                 body=html,
-                parent_id=ui_settings.get("qa_report_parent_id") or None,
+                parent_id=params.get("parent_id") or ui_settings.get("qa_report_parent_id") or None,
                 update=True,
             )
             if not page:
@@ -243,7 +243,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
                 space=space,
                 title=page_title,
                 body=rendered_html,
-                parent_id=ui_settings.get("mor_parent_id") or None,
+                parent_id=params.get("parent_id") or ui_settings.get("mor_parent_id") or None,
             )
             if not result:
                 raise RuntimeError("Confluence 게시에 실패했습니다.")
@@ -275,6 +275,15 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
             user_info = confluence.get_user_info(user_email)
             user_info["email"] = user_email
             account_id = user_info["accountId"]
+            if account_id == user_email:
+                log("Confluence 사용자 조회 실패, Jira를 통해 accountId 재시도...")
+                jira_id = jira.get_user_account_id(user_email)
+                if jira_id:
+                    account_id = jira_id
+                    user_info["accountId"] = jira_id
+                    log(f"  accountId 확인: {jira_id}")
+                else:
+                    log("  [경고] accountId 조회 실패 — Confluence 문서 수집이 0건일 수 있습니다.")
 
             log(f"Jira 이슈 수집 중... ({start_date} ~ {end_date})")
             jql_all = (
@@ -384,7 +393,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
                 space=space,
                 title=title,
                 body=full_body,
-                parent_id=ui_settings.get("mor_parent_id") or None,
+                parent_id=params.get("parent_id") or ui_settings.get("mor_parent_id") or None,
             )
             if not result:
                 raise RuntimeError("Confluence 게시에 실패했습니다.")
@@ -416,7 +425,8 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
 
 @reports_bp.route("/")
 def index():
-    return render_template("index.html")
+    settings = load_ui_settings()
+    return render_template("index.html", settings=settings)
 
 
 @reports_bp.route("/run", methods=["POST"])

@@ -74,6 +74,29 @@ class JiraClient:
             logging.error(f"Defect 데이터 가져오기 실패: {e}")
             return pd.DataFrame()
 
+    def get_user_account_id(self, user_email):
+        """Jira JQL을 통해 이메일로 Atlassian accountId를 조회합니다.
+        Confluence user search보다 신뢰성이 높습니다 (Jira가 이메일→accountId 변환 처리).
+        """
+        try:
+            issues = self.jira.search_issues(
+                f'assignee = "{user_email}"',
+                maxResults=1,
+                fields='assignee'
+            )
+            if issues and issues[0].fields.assignee:
+                return issues[0].fields.assignee.accountId
+            issues = self.jira.search_issues(
+                f'reporter = "{user_email}"',
+                maxResults=1,
+                fields='reporter'
+            )
+            if issues and issues[0].fields.reporter:
+                return issues[0].fields.reporter.accountId
+        except Exception as e:
+            logging.warning(f"Jira accountId 조회 실패 ({user_email}): {e}")
+        return None
+
     def fetch_user_issues(self, user_email, year_month, quiet=False):
         """지정한 월에 사용자가 담당하거나 보고한 이슈를 가져옵니다."""
         import calendar

@@ -152,14 +152,21 @@ class ConfluenceClient:
                     'accountId': result.get('accountId', user_email),
                     'displayName': result.get('displayName', user_email),
                 }
+            # Atlassian Cloud는 list 또는 {"results": [...]} 형태 모두 반환 가능
             results = self.confluence.get(f"rest/api/user/search?query={user_email}")
-            if isinstance(results, list) and results:
+            user_list = (
+                results if isinstance(results, list)
+                else results.get('results', []) if isinstance(results, dict)
+                else []
+            )
+            if user_list:
                 return {
-                    'accountId': results[0].get('accountId', user_email),
-                    'displayName': results[0].get('displayName', user_email),
+                    'accountId': user_list[0].get('accountId', user_email),
+                    'displayName': user_list[0].get('displayName', user_email),
                 }
         except Exception as e:
             logging.warning(f"사용자 정보 조회 실패, email로 대체: {e}")
+        logging.warning(f"accountId 조회 실패 — CQL이 0건 반환될 수 있음: {user_email}")
         return {'accountId': user_email, 'displayName': user_email}
 
     def _get_account_id(self, user_email):
