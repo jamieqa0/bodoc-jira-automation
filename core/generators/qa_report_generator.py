@@ -1,9 +1,11 @@
 import logging
 import threading
+import pathlib
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')  # GUI 없는 백엔드 — 스레드 안전
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import io
 import platform
 from jinja2 import Environment, FileSystemLoader
@@ -12,10 +14,15 @@ from core.clients.jira import JiraClient
 from core.utils import extract_version, format_date, extract_project_name, RESOLVED_STATUSES
 
 # 한글 폰트 설정
+_BUNDLED_FONT = pathlib.Path(__file__).parent.parent / "fonts" / "NanumGothic.ttf"
+
 if platform.system() == 'Windows':
     plt.rc('font', family='Malgun Gothic')
 elif platform.system() == 'Darwin':
     plt.rc('font', family='AppleGothic')
+elif _BUNDLED_FONT.exists():
+    fm.fontManager.addfont(str(_BUNDLED_FONT))
+    plt.rc('font', family=fm.FontProperties(fname=str(_BUNDLED_FONT)).get_name())
 else:
     plt.rc('font', family='NanumGothic')
 plt.rcParams['axes.unicode_minus'] = False
