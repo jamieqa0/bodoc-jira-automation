@@ -122,7 +122,9 @@ class ConfluenceClient:
                 return {"id": str(page_id)}
             return result
         except Exception as e:
+            import traceback
             logging.error(f"Confluence 페이지 게시 실패: {e}")
+            logging.error(traceback.format_exc())
             return None
 
     def attach_file(self, page_id, filename, file_data, content_type='image/png'):
