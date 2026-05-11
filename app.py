@@ -1,9 +1,12 @@
 import os
+from datetime import datetime
 
 from flask import Flask
 
 from blueprints.reports import reports_bp
 from blueprints.settings import settings_bp
+
+_START_TIME = datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
 def create_app() -> Flask:
@@ -13,6 +16,10 @@ def create_app() -> Flask:
 
     app.register_blueprint(reports_bp)
     app.register_blueprint(settings_bp)
+
+    @app.context_processor
+    def inject_start_time():
+        return {"app_updated": _START_TIME}
 
     return app
 
