@@ -23,13 +23,26 @@ class JiraClient:
         try:
             issue = self.jira.issue(issue_key)
             
-            # PRD 링크 추출
+            # PRD 링크 추출 (이슈 링크)
             prd_url = ""
             for link in getattr(issue.fields, 'issuelinks', []):
                 for attr in ('outwardIssue', 'inwardIssue'):
                     linked = getattr(link, attr, None)
                     if linked and 'PRD' in linked.fields.summary.upper():
                         prd_url = f"{self.url}/browse/{linked.key}"
+
+            # Figma / Confluence 원격 링크 추출
+            figma_url = ""
+            confluence_url = ""
+            try:
+                for rl in self.jira.remote_links(issue.key):
+                    url = getattr(getattr(rl, 'object', None), 'url', '') or ''
+                    if 'figma.com' in url and not figma_url:
+                        figma_url = url
+                    elif ('atlassian.net/wiki' in url or '/wiki/' in url) and not confluence_url:
+                        confluence_url = url
+            except Exception:
+                pass
 
             return {
                 'key': issue.key,
@@ -38,6 +51,8 @@ class JiraClient:
                 'status': issue.fields.status.name,
                 'project_name': issue.fields.project.name,
                 'prd_url': prd_url,
+                'figma_url': figma_url,
+                'confluence_url': confluence_url,
                 'id': issue.id
             }
         except Exception as e:

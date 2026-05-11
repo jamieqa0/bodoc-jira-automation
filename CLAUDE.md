@@ -85,14 +85,13 @@ python app.py                                           # http://localhost:5000
 
 > [!IMPORTANT]
 > **해결률(Resolution Rate) 계산 방식**
-> `resolutiondate`가 있거나 상태가 `Prod 배포완료`, `종료`, `Resolved`, `Done`, `Verified` 중 하나인 경우 해결된 것으로 간주합니다.
+> `resolutiondate`가 있거나 상태가 `Prod 배포완료`,`QA 패스`, `종료`, `Resolved`, `Done`, `Verified` 중 하나인 경우 해결된 것으로 간주합니다.
 
-- **SQA vs 결함 분류**: 연간 보고서에서 `SQA` 프로젝트 이슈는 '작업관리', 타 프로젝트 이슈는 '결함'으로 자동 분류됩니다.
+- **SQA vs 결함 분류**: 연간 보고서에서 `SQA` 프로젝트 이슈는 'QA 작업관리'로, 다른 프로젝트 이슈는 '결함'으로 분류합니다.
 - **Amplitude 대응**: 요약에 `[Amplitude]`가 포함된 이슈는 별도의 통계 세션과 전용 차트로 분리 관리됩니다.
-- **폰트 설정**: `matplotlib` 차트 렌더링 시 OS별 한글 폰트를 자동 선택합니다 (Windows: `Malgun Gothic`, Mac: `AppleGothic`).
+- **폰트 설정**: `matplotlib` 차트 렌더링 시 OS별 한글 폰트를 기본적으로 선택합니다 (Windows: `Malgun Gothic`, Mac: `AppleGothic`).
 - **보안**: 개발 편의를 위해 `verify=False`(SSL 무시) 설정이 되어 있습니다. 사내 보안 정책에 따라 수정이 필요할 수 있습니다.
-- **자동 링크**: Jira 이슈의 linked issues 중 `PRD` 단어가 포함된 항목을 찾아 자동으로 PRD 링크를 연결합니다.
-- **보안**: `verify=False`(SSL 무시) 설정이 되어 있습니다.
+- **연관 PRD/기획 링크 자동 링크**: Jira `SQA` 프로젝트 이슈의 linked issues 중 피그마나 컨플루언스 링크가 존재하면 자동으로 연결합니다.
 
 ---
 

@@ -18,10 +18,6 @@ class AnnualGenerator:
         base_url = settings.ATLASSIAN_URL.rstrip('/')
         return f"{base_url}/secure/IssueNavigator.jspa?jql={urllib.parse.quote(jql)}"
 
-    def _is_resolved(self, issue_data):
-        # raw 이슈 객체가 아니라 이미 파싱된 딕셔너리 데이터를 받는다고 가정
-        return issue_data.get('resolved', False)
-
     def generate_html(self, sqa_issues, defect_issues, pages, user_info, year, start_date, end_date, is_current_year):
         base_url = settings.ATLASSIAN_URL.rstrip('/')
         user_email = user_info['email']

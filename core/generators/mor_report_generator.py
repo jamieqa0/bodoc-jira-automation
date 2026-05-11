@@ -4,7 +4,6 @@ MOR Report 초안 생성 모듈
 """
 
 import calendar
-import os
 from config.settings import settings
 from core.utils import RESOLVED_STATUSES
 

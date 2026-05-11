@@ -13,10 +13,7 @@ import argparse
 import sys
 import os
 import re
-import urllib.parse
-import calendar
 import warnings
-from collections import Counter
 from datetime import date
 
 warnings.filterwarnings('ignore', message='.*Unverified HTTPS request.*')

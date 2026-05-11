@@ -1,5 +1,8 @@
 import logging
+import threading
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # GUI 없는 백엔드 — 스레드 안전
 import matplotlib.pyplot as plt
 import io
 import platform
@@ -17,6 +20,8 @@ else:
     plt.rc('font', family='NanumGothic')
 plt.rcParams['axes.unicode_minus'] = False
 
+_chart_lock = threading.Lock()
+
 class QAReportGenerator:
     def __init__(self, jira_client=None):
         self.jira = jira_client or JiraClient(settings.ATLASSIAN_URL, settings.ATLASSIAN_USER, settings.ATLASSIAN_API_TOKEN)
@@ -32,39 +37,47 @@ class QAReportGenerator:
     def generate_charts(self, status_counts, priority_counts, amp_status_counts=None):
         """통계 차트(PNG) 생성"""
         charts = {}
+        with _chart_lock:
+            return self._generate_charts_locked(status_counts, priority_counts, amp_status_counts)
+
+    def _generate_charts_locked(self, status_counts, priority_counts, amp_status_counts=None):
+        charts = {}
         plt.style.use('seaborn-v0_8-muted')
         
         def save_chart(filename):
             plt.tight_layout()
             img = io.BytesIO()
-            plt.savefig(img, format='png', bbox_inches='tight', dpi=100)
+            plt.savefig(img, format='png', bbox_inches='tight', dpi=150)
             img.seek(0)
             charts[filename] = img
             plt.close()
 
         if status_counts is not None and not status_counts.empty:
-            plt.figure(figsize=(6, 4))
+            plt.figure(figsize=(8, 6))
             plt.pie(status_counts, labels=status_counts.index, autopct=lambda p: f'{p:.1f}%\n({int(p/100.*sum(status_counts))})',
-                    startangle=140, colors=plt.cm.Pastel1.colors, pctdistance=0.75, explode=[0.05]*len(status_counts))
-            plt.title('All Defects by Status', fontsize=12, weight='bold')
+                    startangle=140, colors=plt.cm.Pastel1.colors, pctdistance=0.75, explode=[0.05]*len(status_counts),
+                    textprops={'fontsize': 12})
+            plt.title('All Defects by Status', fontsize=15, weight='bold')
             plt.gcf().gca().add_artist(plt.Circle((0,0), 0.60, fc='white'))
             save_chart('status_chart.png')
 
         if priority_counts is not None and not priority_counts.empty:
-            plt.figure(figsize=(6, 4))
+            plt.figure(figsize=(8, 6))
             bars = plt.bar(priority_counts.index, priority_counts.values, color=plt.cm.Paired.colors)
-            plt.title('All Defects by Priority', fontsize=12, weight='bold')
+            plt.title('All Defects by Priority', fontsize=15, weight='bold')
             for b in bars:
-                plt.text(b.get_x() + b.get_width()/2., b.get_height() + 0.1, f'{int(b.get_height())}', ha='center', va='bottom', fontweight='bold')
-            plt.xticks(rotation=45)
+                plt.text(b.get_x() + b.get_width()/2., b.get_height() + 0.1, f'{int(b.get_height())}', ha='center', va='bottom', fontweight='bold', fontsize=13)
+            plt.xticks(rotation=45, fontsize=12)
+            plt.yticks(fontsize=12)
             plt.grid(axis='y', linestyle='--', alpha=0.7)
             save_chart('priority_chart.png')
-            
+
         if amp_status_counts is not None and not amp_status_counts.empty:
-            plt.figure(figsize=(6, 4))
+            plt.figure(figsize=(8, 6))
             plt.pie(amp_status_counts, labels=amp_status_counts.index, autopct='%1.1f%%',
-                    startangle=140, colors=plt.cm.Pastel2.colors, pctdistance=0.75, explode=[0.05]*len(amp_status_counts))
-            plt.title('Amplitude Issues by Status', fontsize=12, weight='bold')
+                    startangle=140, colors=plt.cm.Pastel2.colors, pctdistance=0.75, explode=[0.05]*len(amp_status_counts),
+                    textprops={'fontsize': 12})
+            plt.title('Amplitude Issues by Status', fontsize=15, weight='bold')
             plt.gcf().gca().add_artist(plt.Circle((0,0), 0.60, fc='white'))
             save_chart('amplitude_chart.png')
             
@@ -129,10 +142,13 @@ class QAReportGenerator:
         render_data = {
             'report_title': f"{test_info.get('qa_summary')} Report",
             'project_name': test_info.get('project_name', 'Unknown'),
-            'prd_url': test_info.get('prd_url') or "링크 필요",
+            'prd_url': test_info.get('prd_url') or "",
+            'figma_url': test_info.get('figma_url') or "",
+            'confluence_url': test_info.get('confluence_url') or "",
             'pm_str': '작성 필요',
             'dev_str': '작성 필요',
             'qa_str': workers,
+            'show_version': '보닥앱' in test_info.get('qa_summary', ''),
             'env_type': self._detect_env_type(test_info.get('qa_summary', '')),
             'jira_url': settings.ATLASSIAN_URL,
             'qa_task_key': test_info.get('qa_task'),
@@ -168,6 +184,8 @@ class QAReportGenerator:
             "qa_summary": task_info['summary'],
             "project_name": extract_project_name(task_info['summary']),
             "prd_url": task_info.get('prd_url'),
+            "figma_url": task_info.get('figma_url'),
+            "confluence_url": task_info.get('confluence_url'),
             "version": extract_version(task_info['summary'])
         }
         html = self.create_report_html(df, stats[0], stats[1], info, charts)

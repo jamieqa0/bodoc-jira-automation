@@ -4,7 +4,6 @@ from config.settings import settings
 from core.clients.jira import JiraClient
 from core.clients.confluence import ConfluenceClient
 from core.utils import get_today_str, extract_project_name, extract_version
-import os
 
 class TestPlanGenerator:
     def __init__(self, jira_client=None, confluence_client=None):
@@ -16,15 +15,22 @@ class TestPlanGenerator:
         """테스트 플랜 HTML 양식을 생성합니다."""
         template_name = 'test_plan.html'
         template = self.jinja_env.get_template(template_name)
+        summary = task_info['summary']
+        summary_lower = summary.lower()
+        env_type = 'app' if any(k in summary_lower for k in ['보닥', '앱', 'app', 'ios', 'android', '모바일']) else 'web'
         render_data = {
-            'report_title': f"Test Plan: {task_info['summary']}",
-            'summary': task_info['summary'],
-            'project_name': extract_project_name(task_info['summary']),
-            'version': extract_version(task_info['summary']),
+            'report_title': f"Test Plan: {summary}",
+            'summary': summary,
+            'project_name': extract_project_name(summary),
+            'version': extract_version(summary),
+            'show_version': '보닥앱' in summary,
+            'env_type': env_type,
             'reporter': task_info['reporter'],
             'key': task_info['key'],
             'today': get_today_str(),
-            'prd_url': task_info.get('prd_url') or "링크 필요",
+            'prd_url': task_info.get('prd_url') or "",
+            'figma_url': task_info.get('figma_url') or "",
+            'confluence_url': task_info.get('confluence_url') or "",
             'jira_url': settings.ATLASSIAN_URL
         }
         return template.render(render_data)

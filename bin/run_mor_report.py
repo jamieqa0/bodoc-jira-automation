@@ -8,7 +8,6 @@ import argparse
 import sys
 import os
 import warnings
-from datetime import datetime
 
 # urllib3 경고 억제 (quiet 모드에서만)
 warnings.filterwarnings('ignore', message='.*Unverified HTTPS request.*')
