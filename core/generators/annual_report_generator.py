@@ -1,4 +1,5 @@
 import calendar
+import re
 import urllib.parse
 from collections import Counter
 from jinja2 import Environment, FileSystemLoader
@@ -25,16 +26,21 @@ class AnnualGenerator:
         base_url = settings.ATLASSIAN_URL.rstrip('/')
         user_email = user_info['email']
         display_name = user_info['displayName']
+        account_id = user_info.get('accountId', user_email)
 
         BASE_DATE_JQL = f'AND created >= "{start_date}" AND created <= "{end_date}"'
         JQL_SQA = f'project = "SQA" {BASE_DATE_JQL}'
-        JQL_DEF = f'(assignee = "{user_email}" OR reporter = "{user_email}") AND project != "SQA" {BASE_DATE_JQL}'
+        JQL_DEF = f'(assignee = "{user_email}" OR reporter = "{user_email}") AND project != "SQA" AND issuetype = Defect {BASE_DATE_JQL}'
 
         # SQA 분석
-        sqa_monthly_counts = Counter(i['month'] for i in sqa_issues)
-        sqa_resolved = sum(1 for i in sqa_issues if i['resolved'])
-        sqa_rate = (sqa_resolved / len(sqa_issues) * 100) if sqa_issues else 0
+        _SUBTASK_TYPES = {'sub-task', 'subtask', '하위 작업', 'child issue'}
+        sqa_main_issues = [i for i in sqa_issues if i['issuetype'].lower() not in _SUBTASK_TYPES]
+        sqa_monthly_counts = Counter(i['month'] for i in sqa_main_issues)
+        sqa_resolved = sum(1 for i in sqa_main_issues if i['resolved'])
+        sqa_rate = (sqa_resolved / len(sqa_main_issues) * 100) if sqa_main_issues else 0
         sqa_peak = max(sqa_monthly_counts, key=sqa_monthly_counts.get) if sqa_monthly_counts else None
+        sqa_main_task_count = sum(1 for i in sqa_main_issues if i.get('is_main'))
+        sqa_sub_task_count = len(sqa_main_issues) - sqa_main_task_count
 
         # 결함 분석
         def_project_counts = Counter(i['project_name'] for i in defect_issues)
@@ -45,6 +51,7 @@ class AnnualGenerator:
         def_rate = (def_resolved / len(defect_issues) * 100) if defect_issues else 0
         def_peak = max(def_monthly_counts, key=def_monthly_counts.get) if def_monthly_counts else None
         amplitude_count = sum(1 for i in defect_issues if i.get('amplitude'))
+        ai_count = sum(1 for i in defect_issues if re.search(r'AI\s*상담사', i['summary'], re.IGNORECASE))
         high_prio_count = sum(1 for i in defect_issues if i['priority'] in ('Highest', 'High'))
 
         # 템플릿용 데이터 구성
@@ -73,6 +80,7 @@ class AnnualGenerator:
             for p, c in def_project_counts.most_common()
         ] if total_defects > 0 else []
         amplitude_ratio = (amplitude_count / total_defects * 100) if total_defects > 0 else 0
+        ai_ratio = (ai_count / total_defects * 100) if total_defects > 0 else 0
 
         # 카테고리별 이슈 키 그룹화
         cat_keys = {}
@@ -92,9 +100,13 @@ class AnnualGenerator:
             'title': title,
             'display_name': display_name,
             'user_email': user_email,
+            'account_id': account_id,
             'start_date': start_date,
             'end_date': end_date,
             'sqa_count': len(sqa_issues),
+            'sqa_main_count': len(sqa_main_issues),
+            'sqa_main_task_count': sqa_main_task_count,
+            'sqa_sub_task_count': sqa_sub_task_count,
             'defect_count': len(defect_issues),
             'page_count': len(pages),
             'sqa_all_url': self._jql_url(JQL_SQA),
@@ -110,6 +122,9 @@ class AnnualGenerator:
             'amplitude_count': amplitude_count,
             'amplitude_ratio': amplitude_ratio,
             'amplitude_url': self._jql_url(f'{JQL_DEF} AND summary ~ "Amplitude"'),
+            'ai_count': ai_count,
+            'ai_ratio': ai_ratio,
+            'ai_url': self._jql_url(f'{JQL_DEF} AND summary ~ "AI 상담사"'),
             'defect_peak_label': month_label(def_peak),
             'defect_peak_count': def_monthly_counts.get(def_peak, 0),
             'defect_projects': [(p, c, self._jql_url(get_cat_jql(p))) for p, c in def_project_counts.most_common()],

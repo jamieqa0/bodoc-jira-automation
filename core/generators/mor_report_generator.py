@@ -60,8 +60,8 @@ class MorGenerator:
 
         # JQL 링크 (SQA / 결함 분리)
         sqa_jql = f'project = "SQA" AND created >= "{start_date}" AND created <= "{end_date}"'
-        defect_jql = f'(assignee = "{user_email}" OR reporter = "{user_email}") AND project != "SQA" AND created >= "{start_date}" AND created <= "{end_date}"'
-        all_jql = f'((assignee = "{user_email}" OR reporter = "{user_email}") OR project = "SQA") AND created >= "{start_date}" AND created <= "{end_date}"'
+        defect_jql = f'(assignee = "{user_email}" OR reporter = "{user_email}") AND project != "SQA" AND issuetype = Defect AND created >= "{start_date}" AND created <= "{end_date}"'
+        all_jql = f'(project = "SQA" OR (issuetype = Defect AND (assignee = "{user_email}" OR reporter = "{user_email}"))) AND created >= "{start_date}" AND created <= "{end_date}"'
         
         sqa_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(sqa_jql)}"
         defect_url = f"{settings.ATLASSIAN_URL.rstrip('/')}/secure/IssueNavigator.jspa?jql={quote(defect_jql)}"

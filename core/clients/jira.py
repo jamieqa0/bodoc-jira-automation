@@ -106,7 +106,8 @@ class JiraClient:
         end_date = f"{year_month}-{last_day:02d}"
 
         jql = (
-            f'((assignee = "{user_email}" OR reporter = "{user_email}") OR project = "SQA") '
+            f'(project = "SQA" OR '
+            f'(issuetype = Defect AND (assignee = "{user_email}" OR reporter = "{user_email}"))) '
             f'AND created >= "{start_date}" '
             f'AND created <= "{end_date}" '
             f'ORDER BY created DESC'

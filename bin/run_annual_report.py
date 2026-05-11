@@ -82,12 +82,13 @@ def main():
     if not quiet:
         print(f"Jira 이슈 수집 중... ({start_date} ~ {end_date})")
     jql_all = (
-        f'((assignee = "{user_email}" OR reporter = "{user_email}") OR project = "SQA") '
+        f'(project = "SQA" OR '
+        f'(issuetype = Defect AND (assignee = "{user_email}" OR reporter = "{user_email}"))) '
         f'AND created >= "{start_date}" AND created <= "{end_date}" ORDER BY created ASC'
     )
     raw = jira.jira.search_issues(
         jql_all, maxResults=0,
-        fields='key,summary,status,issuetype,priority,created,resolutiondate,project,fixVersions'
+        fields='key,summary,status,issuetype,priority,created,resolutiondate,project,fixVersions,assignee'
     )
 
     sqa_issues, defect_issues = [], []
@@ -101,13 +102,14 @@ def main():
             versions = [v.name.lower() for v in getattr(iss.fields, 'fixVersions', [])]
             version_str = " ".join(versions)
             summary_lower = iss.fields.summary.lower()
-            
-            if '플래너' in version_str or 'planner' in version_str or '플래너' in summary_lower or 'planner' in summary_lower:
+            _PLANNER_KW = ('플래너', 'planner')
+            _BODOC_KW = ('보닥', 'bodoc', 'android', 'ios', 'ai 상담사')
+            if any(kw in version_str or kw in summary_lower for kw in _PLANNER_KW):
                 project_name = "Planner & B2B"
-            elif '보닥' in version_str or 'bodoc' in version_str or '보닥' in summary_lower or 'bodoc' in summary_lower:
+            elif any(kw in version_str or kw in summary_lower for kw in _BODOC_KW):
                 project_name = "Bodoc 4.0"
             else:
-                project_name = "Planner & B2B" # 기타 항목은 Planner & B2B로 통합
+                project_name = "Planner & B2B"
         elif project_key == 'BODOCRUN':
             project_name = "Bodoc 4.0"
         elif project_key in ('PLN3', 'BDPLNPD'):
@@ -119,6 +121,7 @@ def main():
             else:
                 project_name = "Planner & B2B"
 
+        assignee_email = getattr(iss.fields.assignee, 'emailAddress', None) if iss.fields.assignee else None
         d = {
             'key':          iss.key,
             'summary':      iss.fields.summary,
@@ -128,6 +131,7 @@ def main():
             'project_name': project_name,
             'month':        str(iss.fields.created)[:7],
             'resolved':     is_resolved(iss),
+            'is_main':      assignee_email == user_email,
         }
         if re.search(r'amplitude', iss.fields.summary, re.IGNORECASE):
             d['amplitude'] = True
