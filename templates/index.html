@@ -2,123 +2,131 @@
 {% block title %}리포트 생성 — Atlas QA Reporter{% endblock %}
 
 {% block content %}
-<div class="page-wrapper">
+<div class="content-wrapper">
+
+  <aside class="notice-box">
+    <strong>⚠️ 사용 시 참고사항</strong>
+    <ul class="notice-box__list">
+      <li><strong>산출물 생성 지원</strong> — 본 도구는 Jira/Confluence 데이터를 기반으로 산출물 작성을 지원하는 보조 도구입니다. 최종 품질과 신뢰성은 사용자의 검토와 전문적인 판단을 통해 완성됩니다.</li>
+      <li><strong>정성적 보완 필요</strong> — Shift-left, 리스크 기반 전략 수립, Figma 리뷰, 구두 협의 등 플랫폼 외부 활동은 자동 반영되지 않습니다.</li>
+    </ul>
+  </aside>
 
   <!-- 테스트 플랜 -->
-  <section class="report-section">
+  <section class="report-section" id="section-test-plan">
     <h2 class="section-title">테스트 플랜</h2>
-    <form class="report-form" id="form-test-plan" data-report-type="test_plan" novalidate>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="tp-task-key">태스크 키 <span class="required">*</span></label>
-          <input type="text" id="tp-task-key" name="task_key" required placeholder="예: SQA-122">
+    <div class="report-card">
+      <form class="report-form" id="form-test-plan" data-report-type="test_plan" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tp-task-key">태스크 키 <span class="required">*</span></label>
+            <input type="text" id="tp-task-key" name="task_key" required placeholder="예: SQA-122">
+          </div>
+          <div class="form-group">
+            <label for="tp-user-email">계정 <span class="required">*</span></label>
+            <input type="email" id="tp-user-email" name="user_email" required placeholder="예: user@company.com">
+          </div>
+          <div class="form-group">
+            <label for="tp-parent-id">부모 페이지 ID</label>
+            <input type="text" id="tp-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
+                   value="{{ settings.get('test_plan_parent_id', '') }}">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">실행</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="tp-user-email">실행자 이메일 <span class="required">*</span></label>
-          <input type="email" id="tp-user-email" name="user_email" required placeholder="예: user@company.com">
-        </div>
-        <div class="form-group">
-          <label for="tp-parent-id">부모 페이지 ID</label>
-          <input type="text" id="tp-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
-                 value="{{ settings.get('test_plan_parent_id', '') }}">
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">실행</button>
-        </div>
-      </div>
-    </form>
-    <div class="result-area" id="result-test-plan"></div>
-    <div class="log-area" id="log-test-plan"></div>
+      </form>
+      <div class="result-area" id="result-test-plan"></div>
+      <div class="log-area" id="log-test-plan"></div>
+    </div>
   </section>
 
-  <!-- QA 보고서 -->
-  <section class="report-section">
-    <h2 class="section-title">QA 보고서</h2>
-    <form class="report-form" id="form-qa" data-report-type="qa" novalidate>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="qa-task-key">태스크 키 <span class="required">*</span></label>
-          <input type="text" id="qa-task-key" name="task_key" required placeholder="예: SQA-119">
+  <!-- QA 종료 보고서 -->
+  <section class="report-section" id="section-qa">
+    <h2 class="section-title">QA 종료 보고서</h2>
+    <div class="report-card">
+      <form class="report-form" id="form-qa" data-report-type="qa" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="qa-task-key">태스크 키 <span class="required">*</span></label>
+            <input type="text" id="qa-task-key" name="task_key" required placeholder="예: SQA-119">
+          </div>
+          <div class="form-group">
+            <label for="qa-user-email">계정 <span class="required">*</span></label>
+            <input type="email" id="qa-user-email" name="user_email" required placeholder="예: user@company.com">
+          </div>
+          <div class="form-group">
+            <label for="qa-parent-id">부모 페이지 ID</label>
+            <input type="text" id="qa-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
+                   value="{{ settings.get('qa_report_parent_id', '') }}">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">실행</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="qa-user-email">실행자 이메일 <span class="required">*</span></label>
-          <input type="email" id="qa-user-email" name="user_email" required placeholder="예: user@company.com">
-        </div>
-        <div class="form-group">
-          <label for="qa-parent-id">부모 페이지 ID</label>
-          <input type="text" id="qa-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
-                 value="{{ settings.get('qa_report_parent_id', '') }}">
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">실행</button>
-        </div>
-      </div>
-    </form>
-    <div class="result-area" id="result-qa"></div>
-    <div class="log-area" id="log-qa"></div>
+      </form>
+      <div class="result-area" id="result-qa"></div>
+      <div class="log-area" id="log-qa"></div>
+    </div>
   </section>
 
   <!-- MOR 리포트 -->
-  <section class="report-section">
+  <section class="report-section" id="section-mor">
     <h2 class="section-title">MOR 리포트</h2>
-    <form class="report-form" id="form-mor" data-report-type="mor" novalidate>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="mor-month">대상 월 <span class="required">*</span></label>
-          <input type="text" id="mor-month" name="month" required placeholder="예: 2026-04" pattern="\d{4}-\d{2}">
+    <div class="report-card">
+      <form class="report-form" id="form-mor" data-report-type="mor" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mor-month">대상 월 <span class="required">*</span></label>
+            <input type="text" id="mor-month" name="month" required placeholder="예: 2026-04" pattern="\d{4}-\d{2}">
+          </div>
+          <div class="form-group">
+            <label for="mor-user-email">계정 <span class="required">*</span></label>
+            <input type="email" id="mor-user-email" name="user_email" required placeholder="예: user@company.com">
+          </div>
+          <div class="form-group">
+            <label for="mor-parent-id">부모 페이지 ID</label>
+            <input type="text" id="mor-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
+                   value="{{ settings.get('mor_parent_id', '') }}">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">실행</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="mor-user-email">실행자 이메일 <span class="required">*</span></label>
-          <input type="email" id="mor-user-email" name="user_email" required>
-        </div>
-        <div class="form-group">
-          <label for="mor-parent-id">부모 페이지 ID</label>
-          <input type="text" id="mor-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
-                 value="{{ settings.get('mor_parent_id', '') }}">
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">실행</button>
-        </div>
-      </div>
-    </form>
-    <div class="result-area" id="result-mor"></div>
-    <div class="log-area" id="log-mor"></div>
+      </form>
+      <div class="result-area" id="result-mor"></div>
+      <div class="log-area" id="log-mor"></div>
+    </div>
   </section>
 
   <!-- 연간 보고서 -->
-  <section class="report-section">
+  <section class="report-section" id="section-annual">
     <h2 class="section-title">연간 보고서</h2>
-    <form class="report-form" id="form-annual" data-report-type="annual" novalidate>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="annual-year">대상 연도 <span class="required">*</span></label>
-          <input type="number" id="annual-year" name="year" required min="2020" max="2030" placeholder="예: 2025">
+    <div class="report-card">
+      <form class="report-form" id="form-annual" data-report-type="annual" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="annual-year">대상 연도 <span class="required">*</span></label>
+            <input type="number" id="annual-year" name="year" required min="2020" max="2030" placeholder="예: 2025">
+          </div>
+          <div class="form-group">
+            <label for="annual-user-email">계정 <span class="required">*</span></label>
+            <input type="email" id="annual-user-email" name="user_email" required placeholder="예: user@company.com">
+          </div>
+          <div class="form-group">
+            <label for="annual-parent-id">부모 페이지 ID</label>
+            <input type="text" id="annual-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
+                   value="{{ settings.get('mor_parent_id', '') }}">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">실행</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="annual-user-email">실행자 이메일 <span class="required">*</span></label>
-          <input type="email" id="annual-user-email" name="user_email" required>
-        </div>
-        <div class="form-group">
-          <label for="annual-parent-id">부모 페이지 ID</label>
-          <input type="text" id="annual-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
-                 value="{{ settings.get('mor_parent_id', '') }}">
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">실행</button>
-        </div>
-      </div>
-    </form>
-    <div class="result-area" id="result-annual"></div>
-    <div class="log-area" id="log-annual"></div>
+      </form>
+      <div class="result-area" id="result-annual"></div>
+      <div class="log-area" id="log-annual"></div>
+    </div>
   </section>
-
-  <aside class="notice-box">
-    <h3 class="notice-box__title">⚠️ 사용 시 참고사항</h3>
-    <ul class="notice-box__list">
-      <li><strong>산출물 생성 지원 (Process Support)</strong> — 본 도구는 Jira/Confluence 데이터를 기반으로 테스트 계획서, QA 종료보고서 등 각 단계별 산출물 작성을 지원하는 보조 도구입니다. 자동화를 통해 업무 효율을 높일 수 있으나, 최종 산출물의 품질과 제품의 신뢰성은 사용자의 검토와 전문적인 판단을 통해 완성됩니다.</li>
-      <li><strong>성과 측정의 정성적 보완 (Qualitative Achievements)</strong> — 기획 결함 예방(Shift-left), 리스크 기반 테스트 전략 수립, 피그마(Figma) 리뷰, 구두 협의 및 커뮤니케이션 등 플랫폼 외부에서 수행된 정성적 품질 활동은 자동 반영되지 않습니다. 실제 성과를 균형 있게 전달하기 위해서는 이러한 활동들을 사용자가 직접 보완하여 작성해야 합니다.</li>
-    </ul>
-  </aside>
 
 </div>
 {% endblock %}

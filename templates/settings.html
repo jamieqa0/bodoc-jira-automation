@@ -54,6 +54,11 @@
         value="{{ settings.get('atlassian_api_token', '') }}"
         required
       >
+      <p class="help-text">
+        <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noopener">
+          API 토큰 발급 방법 →
+        </a>
+      </p>
     </div>
 
     <div class="form-group">
@@ -63,8 +68,10 @@
         id="confluence_space_key"
         name="confluence_space_key"
         value="{{ settings.get('confluence_space_key', '') }}"
+        placeholder="예: QA"
         required
       >
+      <p class="help-text">Confluence 페이지 URL의 <code>/spaces/</code> 다음 문자열 — 예: <code>/spaces/QA/</code> → <code>QA</code></p>
     </div>
 
     <div class="form-group">
@@ -74,8 +81,9 @@
         id="test_plan_parent_id"
         name="test_plan_parent_id"
         value="{{ settings.get('test_plan_parent_id', '') }}"
+        placeholder="예: 123456789"
       >
-      <p class="help-text">비워두면 기본값 사용</p>
+      <p class="help-text">Confluence 페이지 URL의 <code>/pages/</code> 다음 숫자 — 비워두면 기본값 사용</p>
     </div>
 
     <div class="form-group">
@@ -85,8 +93,9 @@
         id="qa_report_parent_id"
         name="qa_report_parent_id"
         value="{{ settings.get('qa_report_parent_id', '') }}"
+        placeholder="예: 123456789"
       >
-      <p class="help-text">비워두면 기본값 사용</p>
+      <p class="help-text">Confluence 페이지 URL의 <code>/pages/</code> 다음 숫자 — 비워두면 기본값 사용</p>
     </div>
 
     <div class="form-group">
@@ -96,8 +105,9 @@
         id="mor_parent_id"
         name="mor_parent_id"
         value="{{ settings.get('mor_parent_id', '') }}"
+        placeholder="예: 123456789"
       >
-      <p class="help-text">비워두면 기본값 사용</p>
+      <p class="help-text">Confluence 페이지 URL의 <code>/pages/</code> 다음 숫자 — 비워두면 기본값 사용</p>
     </div>
 
     <div class="form-actions">

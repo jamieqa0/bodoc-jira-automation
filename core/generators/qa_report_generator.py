@@ -140,7 +140,8 @@ class QAReportGenerator:
         amplitude_list = _to_list(df[amp_mask]) if not df.empty and any(amp_mask) else []
 
         render_data = {
-            'report_title': f"{test_info.get('qa_summary')} Report",
+            'report_title': f"{test_info.get('qa_summary')} QA 종료 보고서",
+            'qa_summary': test_info.get('qa_summary', ''),
             'project_name': test_info.get('project_name', 'Unknown'),
             'prd_url': test_info.get('prd_url') or "",
             'figma_url': test_info.get('figma_url') or "",
@@ -189,4 +190,5 @@ class QAReportGenerator:
             "version": extract_version(task_info['summary'])
         }
         html = self.create_report_html(df, stats[0], stats[1], info, charts)
-        return html, charts, task_info['summary']
+        page_title = f"{task_info['summary']} QA 종료 보고서"
+        return html, charts, page_title

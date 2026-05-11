@@ -173,8 +173,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
             if not result_data:
                 raise RuntimeError("QA 보고서 생성에 실패했습니다.")
 
-            html, charts, summary = result_data
-            page_title = f"{summary} Report"
+            html, charts, page_title = result_data
 
             log("Confluence에 게시 중...")
             page = confluence.publish_page(

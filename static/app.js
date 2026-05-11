@@ -4,7 +4,47 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.report-form').forEach(function (form) {
     form.addEventListener('submit', handleSubmit);
   });
+
+  initSidebar();
 });
+
+function initSidebar() {
+  var navItems = document.querySelectorAll('.js-nav-item');
+  if (!navItems.length) return;
+
+  // 첫 번째 섹션 기본 활성화
+  activateSection('test-plan');
+
+  navItems.forEach(function (item) {
+    item.addEventListener('click', function (e) {
+      var section = item.dataset.section;
+      if (!section) return;
+      // 현재 페이지가 index가 아니면 홈으로 이동
+      if (!document.getElementById('section-' + section)) return;
+      e.preventDefault();
+      activateSection(section);
+    });
+  });
+}
+
+function activateSection(sectionId) {
+  // 모든 섹션 숨기기
+  document.querySelectorAll('.report-section').forEach(function (s) {
+    s.classList.remove('is-active');
+  });
+  // 모든 nav 항목 비활성화
+  document.querySelectorAll('.js-nav-item').forEach(function (n) {
+    n.classList.remove('is-active');
+  });
+
+  // 대상 섹션 표시
+  var target = document.getElementById('section-' + sectionId);
+  if (target) target.classList.add('is-active');
+
+  // 대상 nav 항목 활성화
+  var navItem = document.querySelector('.js-nav-item[data-section="' + sectionId + '"]');
+  if (navItem) navItem.classList.add('is-active');
+}
 
 /**
  * Convert report_type string (underscores) to DOM id suffix (hyphens).

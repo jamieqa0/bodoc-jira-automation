@@ -25,9 +25,7 @@ def main():
     if not result:
         return
         
-    html, charts, summary = result
-    
-    page_title = f"{summary} Report"
+    html, charts, page_title = result
     page = confluence.publish_page(
         settings.CONFLUENCE_SPACE_KEY,
         page_title,
