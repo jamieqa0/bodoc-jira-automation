@@ -11,16 +11,16 @@ pip install -r requirements.txt
 # Web UI (주 사용 방식)
 python app.py                          # http://localhost:5000
 
-# CLI — 테스트 플랜 / QA 보고서
+# CLI — 테스트 플랜 / QA 종료보고서
 python bin/run_test_plan.py SQA-122
 python bin/run_qa_report.py SQA-119
 
-# CLI — MOR 리포트
+# CLI — 월간 업무보고서(MOR)
 python bin/run_mor_report.py --month 2026-04            # 로컬 .md 초안 생성
 python bin/run_mor_report.py --month 2026-04 --publish  # Confluence 직접 게시
 python bin/run_mor_report.py --month 2026-04 --draft mor_draft_2026-04.md --publish  # 파일로 게시
 
-# CLI — 연간 보고서
+# CLI — 연간 업무 보고서
 python bin/run_annual_report.py --year 2025
 python bin/run_annual_report.py --year 2026 --user user@example.com --quiet
 
@@ -34,15 +34,15 @@ python bin/debug_jira.py
 
 `.env` (CLI용) 과 `config/ui_settings.json` (Web UI용) 두 가지 설정 경로가 병존합니다.
 
-| 변수 | 설명 |
-|---|---|
-| `ATLASSIAN_URL` | `https://xxxx.atlassian.net` |
-| `ATLASSIAN_USER` | Atlassian 계정 이메일 |
-| `ATLASSIAN_API_TOKEN` | API 토큰 |
-| `CONFLUENCE_SPACE_KEY` | Confluence 공간 키 |
-| `CONFLUENCE_TEST_PLAN_PARENT_ID` | 테스트 플랜 부모 페이지 ID (선택) |
-| `CONFLUENCE_QA_REPORT_PARENT_ID` | QA 보고서 부모 페이지 ID (선택) |
-| `CONFLUENCE_MOR_PARENT_ID` | MOR/연간 보고서 부모 페이지 ID (선택) |
+| 변수                             | 설명                                  |
+| -------------------------------- | ------------------------------------- |
+| `ATLASSIAN_URL`                  | `https://xxxx.atlassian.net`          |
+| `ATLASSIAN_USER`                 | Atlassian 계정 이메일                 |
+| `ATLASSIAN_API_TOKEN`            | API 토큰                              |
+| `CONFLUENCE_SPACE_KEY`           | Confluence 공간 키                    |
+| `CONFLUENCE_TEST_PLAN_PARENT_ID` | 테스트 플랜 부모 페이지 ID (선택)     |
+| `CONFLUENCE_QA_REPORT_PARENT_ID` | QA 보고서 부모 페이지 ID (선택)       |
+| `CONFLUENCE_MOR_PARENT_ID`       | MOR/연간 보고서 부모 페이지 ID (선택) |
 
 `config/Settings` 클래스는 **import 시점**에 `validate()`를 실행합니다. Web UI에서는 `blueprints/reports.py`의 `_patch_settings()`로 런타임에 설정을 monkey-patch하므로, `.env` 없이도 Web UI가 동작합니다.
 
