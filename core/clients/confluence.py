@@ -124,6 +124,12 @@ class ConfluenceClient:
         except Exception as e:
             import traceback
             logging.error(f"Confluence 페이지 게시 실패: {e}")
+            # ApiValueError wraps the original HTTPError in e.reason
+            reason = getattr(e, 'reason', None)
+            if reason is not None:
+                resp = getattr(reason, 'response', None)
+                if resp is not None:
+                    logging.error(f"Confluence API 실제 응답 ({resp.status_code}): {resp.text}")
             logging.error(traceback.format_exc())
             return None
 
