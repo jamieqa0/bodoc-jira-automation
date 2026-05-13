@@ -12,6 +12,7 @@ _ENV_KEY_MAP = {
     "test_plan_parent_id": "TEST_PLAN_PARENT_ID",
     "qa_report_parent_id": "QA_REPORT_PARENT_ID",
     "mor_parent_id": "MOR_PARENT_ID",
+    "annual_parent_id": "ANNUAL_PARENT_ID",
 }
 
 

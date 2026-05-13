@@ -202,7 +202,7 @@ class ConfluenceClient:
 
         try:
             # Confluence CQL 검색 (content.history 확장 포함하여 날짜 정보 가져옴)
-            response = self.confluence.cql(cql, limit=100, expand='content.history')
+            response = self.confluence.cql(cql, limit=100, expand='content.history,content.body.storage')
             pages = response.get('results', [])
 
             result = []
@@ -214,13 +214,13 @@ class ConfluenceClient:
                 page_id = c.get('id', '')
                 excerpt = ""
                 try:
-                    full = self.confluence.get_page_by_id(page_id, expand='body.storage')
-                    body_html = full['body']['storage']['value']
-                    clean_text = re.sub(r'<[^>]+>', '', body_html)
-                    excerpt = clean_text[:300] + "..." if len(clean_text) > 300 else clean_text
+                    body_html = c.get('body', {}).get('storage', {}).get('value', '')
+                    if body_html:
+                        clean_text = re.sub(r'<[^>]+>', '', body_html)
+                        excerpt = clean_text[:300] + "..." if len(clean_text) > 300 else clean_text
                 except Exception as e:
-                    logging.debug(f"본문 로드 실패 (page_id={page_id}): {e}")
-                    excerpt = "본문 로드 실패"
+                    logging.debug(f"본문 파싱 실패 (page_id={page_id}): {e}")
+                    excerpt = ""
 
                 result.append({
                     'title': c.get('title', ''),

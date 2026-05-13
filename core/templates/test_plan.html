@@ -40,12 +40,18 @@
 
     <!-- 2. 예상 일정 -->
     <h2>2. 예상 일정</h2>
-    <ul>
-        <li><strong>개발 완료:</strong> YYYY-MM-DD</li>
+    {% if show_version %}<ul>
+        <li><strong>개발 완료:</strong> <span style="color:#DE350B;font-weight:bold;">YYYY-MM-DD</span></li>
         <li><strong>QA 준비 (계획, 기획 리뷰, TC 설계):</strong> {{ today }}</li>
-        <li><strong>테스트 진행:</strong> YYYY-MM-DD ~ YYYY-MM-DD</li>
-        <li><strong>운영 배포:</strong> YYYY-MM-DD</li>
-    </ul>
+        <li><strong>테스트 진행:</strong> <span style="color:#DE350B;font-weight:bold;">YYYY-MM-DD ~ YYYY-MM-DD</span></li>
+        <li><strong>앱심사 요청:</strong> <span style="color:#DE350B;font-weight:bold;">YYYY-MM-DD</span></li>
+        <li><strong>앱 배포:</strong> <span style="color:#DE350B;font-weight:bold;">YYYY-MM-DD</span></li>
+    </ul>{% else %}<ul>
+        <li><strong>개발 완료:</strong> <span style="color:#DE350B;font-weight:bold;">YYYY-MM-DD</span></li>
+        <li><strong>QA 준비 (계획, 기획 리뷰, TC 설계):</strong> {{ today }}</li>
+        <li><strong>테스트 진행:</strong> <span style="color:#DE350B;font-weight:bold;">YYYY-MM-DD ~ YYYY-MM-DD</span></li>
+        <li><strong>운영 배포:</strong> <span style="color:#DE350B;font-weight:bold;">YYYY-MM-DD</span></li>
+    </ul>{% endif %}
 
     <!-- 3. 테스트 방식 -->
     <h2>3. 테스트 방식</h2>

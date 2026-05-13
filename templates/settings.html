@@ -99,12 +99,24 @@
     </div>
 
     <div class="form-group">
-      <label for="mor_parent_id">MOR/연간 보고서 부모 페이지 ID</label>
+      <label for="mor_parent_id">MOR 보고서 부모 페이지 ID</label>
       <input
         type="text"
         id="mor_parent_id"
         name="mor_parent_id"
         value="{{ settings.get('mor_parent_id', '') }}"
+        placeholder="예: 123456789"
+      >
+      <p class="help-text">Confluence 페이지 URL의 <code>/pages/</code> 다음 숫자 — 비워두면 기본값 사용</p>
+    </div>
+
+    <div class="form-group">
+      <label for="annual_parent_id">연간 보고서 부모 페이지 ID</label>
+      <input
+        type="text"
+        id="annual_parent_id"
+        name="annual_parent_id"
+        value="{{ settings.get('annual_parent_id', '') }}"
         placeholder="예: 123456789"
       >
       <p class="help-text">Confluence 페이지 URL의 <code>/pages/</code> 다음 숫자 — 비워두면 기본값 사용</p>

@@ -8,7 +8,7 @@
     <strong>⚠️ 사용 시 참고사항</strong>
     <ul class="notice-box__list">
       <li><strong>산출물 생성 지원</strong> — 본 도구는 Jira/Confluence 데이터를 기반으로 QA 업무 산출물 작성을 도와주는 보조 도구입니다.</li>
-      <li><strong>정성적 보완 필요</strong> — Shift-left, 리스크 기반 전략 수립, Figma 리뷰, 구두 협의 등 플랫폼 외부 활동은 자동 반영되지 않습니다. 최종 신뢰성은 사용자의 검토와 전문적인 판단에 의해 완성됩니다.</li>
+      <li><strong>정성적 보완 필요</strong> — Shift-left(요건이나 Figma 리뷰, 구두 협의 등) 플랫폼 외부 활동은 자동 반영되지 않습니다. 최종 신뢰성은 사용자의 검토와 전문적인 판단에 의해 완성됩니다.</li>
     </ul>
   </aside>
 
@@ -24,7 +24,7 @@
           </div>
           <div class="form-group">
             <label for="tp-user-email">사용자 계정 <span class="required">*</span></label>
-            <input type="email" id="tp-user-email" name="user_email" required placeholder="예: user@company.com">
+            <input type="email" id="tp-user-email" name="user_email" required placeholder="예: user@company.com" value="{{ atlassian_user }}">
           </div>
           <div class="form-group">
             <label for="tp-parent-id">부모 페이지 ID</label>
@@ -53,7 +53,7 @@
           </div>
           <div class="form-group">
             <label for="qa-user-email">사용자 계정 <span class="required">*</span></label>
-            <input type="email" id="qa-user-email" name="user_email" required placeholder="예: user@company.com">
+            <input type="email" id="qa-user-email" name="user_email" required placeholder="예: user@company.com" value="{{ atlassian_user }}">
           </div>
           <div class="form-group">
             <label for="qa-parent-id">부모 페이지 ID</label>
@@ -82,7 +82,7 @@
           </div>
           <div class="form-group">
             <label for="mor-user-email">사용자 계정 <span class="required">*</span></label>
-            <input type="email" id="mor-user-email" name="user_email" required placeholder="예: user@company.com">
+            <input type="email" id="mor-user-email" name="user_email" required placeholder="예: user@company.com" value="{{ atlassian_user }}">
           </div>
           <div class="form-group">
             <label for="mor-parent-id">부모 페이지 ID</label>
@@ -111,12 +111,12 @@
           </div>
           <div class="form-group">
             <label for="annual-user-email">사용자 계정 <span class="required">*</span></label>
-            <input type="email" id="annual-user-email" name="user_email" required placeholder="예: user@company.com">
+            <input type="email" id="annual-user-email" name="user_email" required placeholder="예: user@company.com" value="{{ atlassian_user }}">
           </div>
           <div class="form-group">
             <label for="annual-parent-id">부모 페이지 ID</label>
             <input type="text" id="annual-parent-id" name="parent_id" placeholder="미입력 시 Settings 값 사용"
-                   value="{{ settings.get('mor_parent_id', '') }}">
+                   value="{{ settings.get('annual_parent_id', '') }}">
           </div>
           <div class="form-actions">
             <button type="submit" class="btn-primary">실행</button>

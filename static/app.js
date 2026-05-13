@@ -59,9 +59,9 @@ function isValidEmail(value) {
 }
 
 function clearFieldErrors(form) {
-  form.querySelectorAll('.field-error').forEach(function (el) { el.remove(); });
-  form.querySelectorAll('.input-invalid').forEach(function (el) {
-    el.classList.remove('input-invalid');
+  form.querySelectorAll('.field-error, .field-warning').forEach(function (el) { el.remove(); });
+  form.querySelectorAll('.input-invalid, .input-warning').forEach(function (el) {
+    el.classList.remove('input-invalid', 'input-warning');
   });
 }
 
@@ -71,6 +71,28 @@ function showFieldError(input, message) {
   err.className = 'field-error';
   err.textContent = message;
   input.parentNode.appendChild(err);
+}
+
+function showFieldWarning(input, message) {
+  input.classList.add('input-warning');
+  var warn = document.createElement('p');
+  warn.className = 'field-warning';
+  warn.textContent = '⚠ ' + message;
+  input.parentNode.appendChild(warn);
+}
+
+function isFutureMonth(value) {
+  var match = value.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return false;
+  var now = new Date();
+  var inputYear = parseInt(match[1], 10);
+  var inputMonth = parseInt(match[2], 10);
+  return inputYear > now.getFullYear() ||
+    (inputYear === now.getFullYear() && inputMonth > now.getMonth() + 1);
+}
+
+function isFutureYear(value) {
+  return parseInt(value, 10) > new Date().getFullYear();
 }
 
 function validateForm(form) {
@@ -87,6 +109,10 @@ function validateForm(form) {
     } else if (el.type === 'email' && val && !isValidEmail(val)) {
       showFieldError(el, '올바른 이메일 형식이 아닙니다.');
       valid = false;
+    } else if (el.name === 'month' && val && isFutureMonth(val)) {
+      showFieldWarning(el, '아직 지나지 않은 월입니다. 데이터가 없을 수 있습니다.');
+    } else if (el.name === 'year' && val && isFutureYear(val)) {
+      showFieldWarning(el, '아직 지나지 않은 연도입니다. 데이터가 없을 수 있습니다.');
     }
   }
   return valid;
@@ -132,6 +158,21 @@ function handleSubmit(e) {
   startReport(reportType, formData, form);
 }
 
+function getFormSnapshot(form) {
+  var data = {};
+  var elements = form.elements;
+  for (var i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    if (!el.name) continue;
+    if (el.type === 'checkbox') {
+      data[el.name] = el.checked;
+    } else if (el.value !== undefined) {
+      data[el.name] = el.value.trim();
+    }
+  }
+  return data;
+}
+
 function startReport(reportType, data, form) {
   var payload = Object.assign({ report_type: reportType }, data);
 
@@ -151,8 +192,7 @@ function startReport(reportType, data, form) {
         var resultArea = document.getElementById('result-' + suffix);
         showResult(
           { status: 'error', message: result.body.error || '알 수 없는 오류' },
-          resultArea,
-          form
+          resultArea, form, reportType, data
         );
         if (result.body.redirect) {
           setTimeout(function () {
@@ -161,16 +201,16 @@ function startReport(reportType, data, form) {
         }
         return;
       }
-      streamLogs(result.body.job_id, reportType, form);
+      streamLogs(result.body.job_id, reportType, form, data);
     })
     .catch(function (err) {
       var suffix = toIdSuffix(reportType);
       var resultArea = document.getElementById('result-' + suffix);
-      showResult({ status: 'error', message: '요청 실패: ' + err.message }, resultArea, form);
+      showResult({ status: 'error', message: '요청 실패: ' + err.message }, resultArea, form, reportType, data);
     });
 }
 
-function streamLogs(jobId, reportType, form) {
+function streamLogs(jobId, reportType, form, formData) {
   var suffix = toIdSuffix(reportType);
   var logArea = document.getElementById('log-' + suffix);
   var resultArea = document.getElementById('result-' + suffix);
@@ -195,16 +235,16 @@ function streamLogs(jobId, reportType, form) {
     } catch (_) {
       result = { status: 'error', message: '응답 파싱 실패' };
     }
-    showResult(result, resultArea, form);
+    showResult(result, resultArea, form, reportType, formData);
   });
 
   es.onerror = function () {
     es.close();
-    showResult({ status: 'error', message: '연결 오류' }, resultArea, form);
+    showResult({ status: 'error', message: '연결 오류' }, resultArea, form, reportType, formData);
   };
 }
 
-function showResult(result, resultArea, form) {
+function showResult(result, resultArea, form, reportType, formData) {
   // Re-enable submit button
   var submitBtn = form.querySelector('button[type="submit"]');
   submitBtn.disabled = false;
@@ -221,7 +261,33 @@ function showResult(result, resultArea, form) {
     }
     resultArea.className = 'result-area success';
   } else {
-    resultArea.textContent = '❌ 오류: ' + (result.message || '알 수 없는 오류');
+    var msg = '❌ 오류: ' + (result.message || '알 수 없는 오류');
     resultArea.className = 'result-area error';
+
+    if (reportType && formData) {
+      var retryBtn = document.createElement('button');
+      retryBtn.type = 'button';
+      retryBtn.className = 'btn-retry';
+      retryBtn.textContent = '재시도';
+      retryBtn.addEventListener('click', function () {
+        resultArea.textContent = '';
+        resultArea.className = 'result-area';
+        var suffix = toIdSuffix(reportType);
+        var logArea = document.getElementById('log-' + suffix);
+        if (logArea) logArea.textContent = '';
+
+        submitBtn.disabled = true;
+        submitBtn.dataset.originalText = submitBtn.textContent;
+        submitBtn.textContent = '실행 중...';
+
+        startReport(reportType, formData, form);
+      });
+
+      resultArea.textContent = msg;
+      resultArea.appendChild(document.createElement('br'));
+      resultArea.appendChild(retryBtn);
+    } else {
+      resultArea.textContent = msg;
+    }
   }
 }

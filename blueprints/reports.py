@@ -16,6 +16,7 @@ reports_bp = Blueprint("reports", __name__)
 
 # In-memory job store: job_id -> {status, log_queue, confluence_url, error}
 _jobs: dict[str, dict] = {}
+_settings_lock = threading.Lock()
 
 _REQUIRED_SETTINGS = ("atlassian_url", "atlassian_user", "atlassian_api_token", "confluence_space_key")
 
@@ -102,10 +103,6 @@ def _page_url(base_url: str, result: dict) -> str:
 
 # ── Background worker ─────────────────────────────────────────────────────────
 
-# WARNING: _patch_settings()는 module-level 전역 singleton을 수정합니다.
-# POST /run 요청이 동시에 들어오면 설정값이 서로 덮어씌워질 수 있습니다.
-# 2인 팀의 로컬 환경에서는 허용 가능하지만, 동시 실행이 필요하다면
-# generator 생성자에 credentials를 직접 전달하는 방식으로 리팩토링이 필요합니다.
 def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
     log = _make_log(job_id)
     confluence_url = None
@@ -115,6 +112,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
     token = ui_settings["atlassian_api_token"]
     space = ui_settings["confluence_space_key"]
 
+    _settings_lock.acquire()
     orig = _patch_settings(url, user, token, space)
 
     try:
@@ -387,7 +385,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
                 space=space,
                 title=title,
                 body=full_body,
-                parent_id=params.get("parent_id") or ui_settings.get("mor_parent_id") or None,
+                parent_id=params.get("parent_id") or ui_settings.get("annual_parent_id") or None,
             )
             if not result:
                 raise RuntimeError("Confluence 게시에 실패했습니다.")
@@ -408,6 +406,7 @@ def _run_report(job_id: str, params: dict, ui_settings: dict) -> None:
 
     finally:
         _restore_settings(orig)
+        _settings_lock.release()
         # Sentinel — signals stream generator to stop
         try:
             _jobs[job_id]["log_queue"].put(None)

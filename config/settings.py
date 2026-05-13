@@ -58,4 +58,3 @@ class Settings:
             )
 
 settings = Settings()
-settings.validate()

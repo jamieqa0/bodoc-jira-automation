@@ -343,6 +343,21 @@ body {
 
 .result-area a { color: inherit; font-weight: 600; }
 
+.btn-retry {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 16px;
+  background: transparent;
+  color: #7F1D1D;
+  border: 1px solid #F5A0A0;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-retry:hover { background: #F5A0A0; }
+
 .log-area {
   display: none;
   margin-top: 12px;
@@ -418,6 +433,17 @@ body {
   margin: 4px 0 0;
   font-size: 12px;
   color: #E03434;
+}
+
+.input-warning {
+  border-color: #D97706 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12) !important;
+}
+
+.field-warning {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #92400E;
 }
 
 /* ===== Footer ===== */
